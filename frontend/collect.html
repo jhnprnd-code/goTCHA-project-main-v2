@@ -33,10 +33,13 @@
     <!-- ============ STEP 1: CONSENT ============ -->
     <section id="step-consent" aria-labelledby="h-consent">
         <h1 id="h-consent" tabindex="-1">goTCHA: Behavioral-focused CAPTCHA for low-vision users</h1>
-        <p class="muted">Consent version 2026-10-v4.</p>
+        <p class="muted">Consent version 2026-10-v5.</p>
 
         <h2>WHAT IS THIS ABOUT?</h2>
         <p>I am building a short game that tells people apart from automated scripts, and checking that it works for people with low vision. To do that we need to see how real people play it.</p>
+
+        <h2>PROTOTYPE LIMITATION</h2>
+        <p>This is a research pilot, not a working security service. The bundled statistical detector was trained on synthetic data and is disabled; an unvalidated rule-based placeholder handles decisions instead. Do not rely on goTCHA to protect accounts, personal information, or other services.</p>
 
         <h2>WHAT WILL I DO?</h2>
         <p>About 5 minutes: one practice level and three short levels (about 20 seconds each). Press the SPACE bar to jump over red blocks. Please play the way you normally would, using your usual screen setup. You don't need to be perfect.</p>
@@ -121,7 +124,7 @@
 
 <script src="/gotcha-widget.js"></script>
 <script>
-    const CONSENT_VERSION = "2026-10-v4";
+    const CONSENT_VERSION = "2026-10-v5";
     const TIMED_LEVELS = 3;
     const $ = (id) => document.getElementById(id);
 

@@ -60,7 +60,7 @@ def wait_up():
 
 
 def api_guards():
-    base = {"consent": True, "adult": True, "consent_version": "2026-10-v4",
+    base = {"consent": True, "adult": True, "consent_version": "2026-10-v5",
             "group": "sighted", "keyboard": "laptop", "aids": ["none"]}
     check("start without consent -> 400", requests.post(BASE + "/collect/start", json={**base, "consent": False}).status_code == 400)
     check("start without adult -> 400", requests.post(BASE + "/collect/start", json={**base, "adult": False}).status_code == 400)
@@ -113,7 +113,9 @@ def play_level(page, jitter=25.0, stall=False):
 
 def register_via_ui(page):
     page.goto(BASE + "/collect")
-    check("final consent version shown", "Consent version 2026-10-v4" in page.locator("#step-consent").inner_text())
+    consent_text = page.locator("#step-consent").inner_text().lower()
+    check("final consent version and prototype limitation shown",
+          "consent version 2026-10-v5" in consent_text and "not a working security service" in consent_text)
     check("draft placeholders removed", page.locator(".todo").count() == 0)
     check("continue disabled before consent", page.is_disabled("#btn-consent"))
     page.check("#chk-adult")

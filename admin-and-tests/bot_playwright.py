@@ -107,7 +107,7 @@ if __name__ == "__main__":
     ap.add_argument("--pool", nargs="*", default=[], help="human sessions.jsonl for fitted/replay")
     ap.add_argument("--label", default="")
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--consent-version", default="2026-10-v4")
+    ap.add_argument("--consent-version", default="2026-10-v5")
     ap.add_argument("--intent-out", default="", help="append intended key times here (for analyze_artifacts.py)")
     ap.add_argument("--headed", action="store_true", help="Watch the bot play visually")
     a = ap.parse_args()

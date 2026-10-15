@@ -2,7 +2,7 @@
 
 ## 0. BEFORE ANYONE PLAYS
 
-1. The consent form is version '2026-10-v4'. It states that the project has not been formally reviewed by an IRB or ethics committee, that participation is voluntary, and that a third-party tunnel provider may process visitors' IP addresses and connection metadata. Confirm with your instructor or school whether participant recruitment is permitted for this assignment before sharing the link.
+1. The consent form is version '2026-10-v5'. It states that the project has not been formally reviewed by an IRB or ethics committee, that the app is a pilot rather than a working security service, that participation is voluntary, and that a third-party tunnel provider may process visitors' IP addresses and connection metadata. Confirm with your instructor or school whether participant recruitment is permitted for this assignment before sharing the link.
 2. The form gives October 21, 2026 as the data-deletion request deadline. Confirm any extension directly with the researcher. If the consent wording changes, bump 'CONSENT_VERSION' in both 'frontend/collect.html' and 'backend/backend_api.py'.
 3. Participants must be 18 or older. The page enforces a checkbox, not verification.
 

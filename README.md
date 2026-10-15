@@ -7,7 +7,7 @@ export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot
 uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 '--no-access-log' disables Uvicorn access logs. Tunnel providers may separately process connection metadata under their own privacy policies.
 
-The consent form is version `2026-10-v4`; it states that this course project has not received formal IRB or ethics-committee review. Confirm recruitment is permitted with your instructor or school before sharing the link. Participants open `http://127.0.0.1:8000/collect` on the server computer or use the HTTPS URL printed by the tunnel. Ways to reach it:
+The consent form is version `2026-10-v5`; it states that this course project has not received formal IRB or ethics-committee review and that the app is a research pilot, not a working security service. Confirm recruitment is permitted with your instructor or school before sharing the link. Participants open `http://127.0.0.1:8000/collect` on the server computer or use the HTTPS URL printed by the tunnel. Ways to reach it:
 - **In person (best for the low-vision participants):** run it on your laptop and let participants play on that machine. You can watch their setup and note problems.
 - **Remote:** a tunnel from your laptop, e.g. `cloudflared tunnel --url http://localhost:8000` or `ngrok http 8000`. This gives an HTTPS link. The server is bound to localhost so it is not also exposed directly to your LAN.
 - Keep your laptop awake and the server running while people play. A restart is safe: the registry reloads from 'consent.jsonl', but anyone mid-level has to redo that level.
