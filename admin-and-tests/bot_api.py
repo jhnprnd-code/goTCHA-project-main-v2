@@ -70,7 +70,7 @@ if __name__ == "__main__":
     ap.add_argument("--admin-key", default=os.environ.get("GOTCHA_ADMIN_KEY", ""))
     ap.add_argument("--pool", nargs="*", default=[], help="human sessions.jsonl for fitted/replay")
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--consent-version", default="2026-10-v1")
+    ap.add_argument("--consent-version", default="2026-10-v3")
     args = ap.parse_args()
 
     pool = load_human_pool(args.pool) if args.pool else None

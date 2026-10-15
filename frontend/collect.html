@@ -22,8 +22,6 @@
         button { padding: 14px 28px; min-height: 52px; background: var(--accent); color: #000; font-size: 22px; font-weight: bold; border: 0; cursor: pointer; }
         button:disabled { opacity: .45; cursor: not-allowed; }
         :focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
-        .todo { background: #ff0; color: #000; padding: 0 4px; font-weight: bold; }
-        #draft-banner { background: #b00; color: #fff; padding: 12px 16px; font-weight: bold; margin-bottom: 16px; display: none; }
         .err { color: var(--bad); font-weight: bold; min-height: 1.5em; }
         .code { font-family: monospace; font-size: 40px; letter-spacing: .1em; background: #000; padding: 8px 16px; display: inline-block; border: 2px solid var(--accent); }
         .muted { color: #ccc; font-size: 18px; }
@@ -32,12 +30,10 @@
 </head>
 <body>
 <main>
-    <div id="draft-banner" role="alert">THIS IS THE FIRST DRAFT OF THIS DOCUMENT. ALL DETAILS ARE PLACEHOLDERS AND NEED TO BE FILLED IN.</div>
-
     <!-- ============ STEP 1: CONSENT ============ -->
     <section id="step-consent" aria-labelledby="h-consent">
         <h1 id="h-consent" tabindex="-1">Timing study: the goTCHA game</h1>
-        <p class="muted">Consent version 2026-10-v1. </p>
+        <p class="muted">Consent version 2026-10-v3. </p>
 
         <h2>WHAT IS THIS ABOUT?</h2>
         <p>I am building a short game that tells people apart from automated scripts, and checking that it works for people with low vision. To do that we need to see how real people play it.</p>
@@ -50,20 +46,20 @@
             <li>The times you press and release the SPACE bar, and nothing else you type.</li>
             <li>Technical details: browser name and version, screen size, zoom level, and how smoothly the page ran.</li>
             <li>How you would describe your vision, which assistive tools you use, and what kind of keyboard.</li>
-            <li>A random participant code. I do <strong>NOT</strong> record your name, email, audio, or video. The study server is set up not to save IP addresses with your data.</li>
+            <li>A random participant code. I do <strong>NOT</strong> record your name, email, audio, or video. IP addresses are not written to the study data files. If you open this page through a third-party tunnel, its provider may process your IP address and connection metadata under its own privacy policy.</li>
         </ul>
 
         <h2>TAKING PART AND WITHDRAWING</h2>
-        <p>Taking part is voluntary and you can stop at any time by closing this page. At the end you will get a participant code. If you give that code to <span class="todo">JOHN PARAUNDA</span> before <span class="todo">OCTOBER 20, 2026</span>, your data will be deleted.</p>
+        <p>Taking part is voluntary and you can stop at any time by closing this page. At the end you will get a participant code. If you give that code to John Paraunda before October 21, 2026, your data will be deleted.</p>
 
         <h2>RISKS AND BENEFITS</h2>
         <p>Risks are minimal: a few minutes of screen time and finger use. If you feel any discomfort, stop. There is no payment involved, and our participation helps test whether a CAPTCHA can work for people with low vision.</p>
 
         <h2>HOW WILL THE DATA BE USED?</h2>
-        <p>For a course project at <span class="todo">Mapúa Malayan Colleges Mindanao, BS in Computer Science, Year 2</span>. Results will be reported as group statistics. An anonymous copy of the data may be shared with <span class="todo">SIR CLYDE CHESTER BALAMAN</span>.</p>
+        <p>For a second-year undergraduate course project in the BS Computer Science program at Mapúa Malayan Colleges Mindanao. Results will be reported as group statistics. An anonymous copy of the data may be shared with course instructor Sir Clyde Chester Balaman.</p>
 
         <h2>IF YOU HAVE QUESTIONS, PLEASE CONTACT:</h2>
-        <p><span class="todo">JOHN PARAUNDA</span>, <span class="todo">jpparaunda@mcm.edu.ph</span>. Approval reference: <span class="todo">[APPROVAL / ETHICS REFERENCE]</span>.</p>
+        <p>John Paraunda, jpparaunda@mcm.edu.ph. Ethics Status: This is an independent undergraduate course assignment. It has not been formally reviewed by an Institutional Review Board (IRB) or ethics committee. Participation is strictly voluntary, and you are evaluating a student-built prototype.</p>
 
         <fieldset>
             <legend>Agreement</legend>
@@ -117,18 +113,16 @@
         <h1 id="h-done" tabindex="-1">THANK YOU!</h1>
         <p>Your participant code is:</p>
         <p><span class="code" id="pid-out"></span></p>
-        <p>Write it down. If you later want your data deleted, give this code to <span class="todo">JOHN PARAUNDA</span> before <span class="todo">OCTOBER 20, 2026</span>. I can't find your data without it, because I simply don't know who you are.</p>
+        <p>Write it down. If you later want your data deleted, give this code to John Paraunda before October 21, 2026. I can't find your data without it, because I simply don't know who you are.</p>
         <p class="muted">YOU CAN CLOSE THIS PAGE NOW.</p>
     </section>
 </main>
 
 <script src="/gotcha-widget.js"></script>
 <script>
-    const CONSENT_VERSION = "2026-10-v1";
+    const CONSENT_VERSION = "2026-10-v3";
     const TIMED_LEVELS = 3;
     const $ = (id) => document.getElementById(id);
-
-    if (document.querySelector(".todo")) $("draft-banner").style.display = "block";
 
     function show(stepId) {
         ["step-consent", "step-about", "step-play", "step-done"].forEach((s) => { $(s).hidden = s !== stepId; });

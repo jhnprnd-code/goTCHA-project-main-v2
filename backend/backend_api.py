@@ -70,7 +70,7 @@ MAX_SLOW_FRAME_RATIO = float(os.environ.get("GOTCHA_MAX_SLOW_RATIO", "0.10"))
 MIN_AVG_FPS = float(os.environ.get("GOTCHA_MIN_FPS", "20.0"))
 
 SCHEMA_VERSION = 2
-CONSENT_VERSION = "2026-10-v1"   # bump when the consent text on collect.html changes
+CONSENT_VERSION = "2026-10-v3"   # bump when the consent text on collect.html changes
 CHALLENGE_TTL_S = 90
 TOKEN_TTL_S = 120
 RATE_LIMIT_PER_MIN = 30

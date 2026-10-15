@@ -2,20 +2,20 @@
 
 ## 0. BEFORE ANYONE PLAYS
 
-1. Open 'collect.html' and replace every yellow '[PLACEHOLDER]' (researcher name, email, withdrawal deadline, university, approval reference). The red DRAFT banner disappears when none are left.
-2. Get your instructor's or school's sign-off on the consent text. You are recording keystroke timing and a self-reported vision category (sensitive), so ask what your program requires. If they give you their own consent wording, paste it in and bump 'CONSENT_VERSION' in both 'collect.html' and 'backend_api.py'.
+1. The consent form is version '2026-10-v3'. It states that the project has not been formally reviewed by an IRB or ethics committee, that participation is voluntary, and that a third-party tunnel provider may process visitors' IP addresses and connection metadata. Confirm with your instructor or school whether participant recruitment is permitted for this assignment before sharing the link.
+2. The form gives October 21, 2026 as the data-deletion request deadline. Confirm any extension directly with the researcher. If the consent wording changes, bump 'CONSENT_VERSION' in both 'frontend/collect.html' and 'backend/backend_api.py'.
 3. Participants must be 18 or older. The page enforces a checkbox, not verification.
 
 ## 1. Run the program.
 
 pip install -r requirements.txt
+uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot data
-uvicorn backend_api:app --host 0.0.0.0 --port 8000 --no-access-log
-'--no-access-log' keeps IP addresses out of your logs, which the consent text promises.
+'--no-access-log' disables Uvicorn access logs. The application does not write visitors' IP addresses to study records; tunnel providers may separately process connection metadata under their own privacy policies.
 
 Participants open 'http://<your-address>:8000/collect'. Ways to reach it:
 - **In person (best for the low-vision participants):** run it on laptop and let participants play on the machine or on theirs over the same Wi-Fi ('http://<your-LAN-IP>:8000/collect'). You can watch their setup and note problems.
-- **Remote:** a tunnel from your laptop, e.g. 'cloudflared tunnel --url http://localhost:8000' or `ngrok http 8000`. This gives an HTTPS link. Tunnel providers keep their own logs, so say so if your school asks.
+- **Remote:** a tunnel from your laptop, e.g. 'cloudflared tunnel --url http://localhost:8000' or `ngrok http 8000`. This gives an HTTPS link. The server is bound to localhost so it is not also exposed directly to your LAN.
 - Keep your laptop awake and the server running while people play. A restart is safe: the registry reloads from 'consent.jsonl', but anyone mid-level has to redo that level.
 
 ## 2. What each participant does
@@ -46,4 +46,4 @@ python delete_participant.py P1A2B3C # withdrawal: removes that code from both f
 
 - "Human" labels are self-attested by whoever opens the link. Share the link only with people you recruit.
 - Telemetry is reported by the browser, so it is evidence for calibration, not proof.
-- 'tests/e2e_collect.py' re-runs the whole flow in headless Chromium (about 2 minutes) using temporary files. Run it after any change.
+- 'admin-and-tests/e2e_collect.py' re-runs the whole flow in headless Chromium (about 2 minutes) using temporary files. Run it after any change.
