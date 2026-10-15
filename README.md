@@ -5,10 +5,10 @@
 pip install -r requirements.txt
 export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot data
 uvicorn backend_api:app --host 0.0.0.0 --port 8000 --no-access-log
-'--no-access-log' keeps IP addresses out of your logs, which the consent text promises.
+'--no-access-log' keeps IP addresses out of your logs.
 
 Participants open 'http://<your-address>:8000/collect'. Ways to reach it:
-- **In person (best for the low-vision participants):** run it on laptop and let participants play on the machine or on theirs over the same Wi-Fi ('http://<your-LAN-IP>:8000/collect'). You can watch their setup and note problems.
+- **In person (best for the low-vision participants):** run it on your own laptop and let participants play on the machine or on theirs over the same Wi-Fi ('http://<your-LAN-IP>:8000/collect'). You can watch their setup and note problems.
 - **Remote:** a tunnel from your laptop, e.g. 'cloudflared tunnel --url http://localhost:8000' or `ngrok http 8000`. This gives an HTTPS link. Tunnel providers keep their own logs, so say so if your school asks.
 - Keep your laptop awake and the server running while people play. A restart is safe: the registry reloads from 'consent.jsonl', but anyone mid-level has to redo that level.
 
