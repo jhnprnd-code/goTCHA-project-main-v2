@@ -1,6 +1,6 @@
 # goTCHA_project
 
-## 1. Run the program.
+## 1. Run program
 
 pip install -r requirements.txt
 export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot data
