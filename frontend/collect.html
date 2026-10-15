@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>goTCHA</title>
+    <style>
+        :root { --bg:#111; --panel:#222; --fg:#fff; --accent:#ff0; --ok:#0f0; --bad:#f66; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--fg); font-family: Arial, Helvetica, sans-serif; font-size: 20px; line-height: 1.5; margin: 0; padding: 24px 16px 64px; }
+        main { max-width: 860px; margin: 0 auto; }
+        h1 { font-size: 32px; margin: 0 0 16px; }
+        h2 { font-size: 26px; margin: 28px 0 8px; }
+        h1:focus, h2:focus { outline: none; }
+        section { background: var(--panel); padding: 24px; border: 2px solid #555; }
+        ul { padding-left: 1.2em; }
+        li { margin-bottom: 6px; }
+        fieldset { border: 2px solid #777; margin: 20px 0; padding: 12px 16px; }
+        legend { font-weight: bold; padding: 0 8px; }
+        label { display: block; margin: 10px 0; cursor: pointer; }
+        input[type=radio], input[type=checkbox] { width: 24px; height: 24px; margin-right: 10px; vertical-align: middle; accent-color: var(--accent); }
+        button { padding: 14px 28px; min-height: 52px; background: var(--accent); color: #000; font-size: 22px; font-weight: bold; border: 0; cursor: pointer; }
+        button:disabled { opacity: .45; cursor: not-allowed; }
+        :focus-visible { outline: 4px solid #fff; outline-offset: 3px; }
+        .todo { background: #ff0; color: #000; padding: 0 4px; font-weight: bold; }
+        #draft-banner { background: #b00; color: #fff; padding: 12px 16px; font-weight: bold; margin-bottom: 16px; display: none; }
+        .err { color: var(--bad); font-weight: bold; min-height: 1.5em; }
+        .code { font-family: monospace; font-size: 40px; letter-spacing: .1em; background: #000; padding: 8px 16px; display: inline-block; border: 2px solid var(--accent); }
+        .muted { color: #ccc; font-size: 18px; }
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+<main>
+    <div id="draft-banner" role="alert">THIS IS THE FIRST DRAFT OF THIS DOCUMENT. ALL DETAILS ARE PLACEHOLDERS AND NEED TO BE FILLED IN.</div>
+
+    <!-- ============ STEP 1: CONSENT ============ -->
+    <section id="step-consent" aria-labelledby="h-consent">
+        <h1 id="h-consent" tabindex="-1">Timing study: the goTCHA game</h1>
+        <p class="muted">Consent version 2026-10-v1. </p>
+
+        <h2>WHAT IS THIS ABOUT?</h2>
+        <p>I am building a short game that tells people apart from automated scripts, and checking that it works for people with low vision. To do that we need to see how real people play it.</p>
+
+        <h2>WHAT WILL I DO?</h2>
+        <p>About 5 minutes: one practice level and three short levels (about 20 seconds each). Press the SPACE bar to jump over red blocks. Please play the way you normally would, using your usual screen setup. You don't need to be perfect.</p>
+
+        <h2>WHAT IS RECORDED?</h2>
+        <ul>
+            <li>The times you press and release the SPACE bar, and nothing else you type.</li>
+            <li>Technical details: browser name and version, screen size, zoom level, and how smoothly the page ran.</li>
+            <li>How you would describe your vision, which assistive tools you use, and what kind of keyboard.</li>
+            <li>A random participant code. I do <strong>NOT</strong> record your name, email, audio, or video. The study server is set up not to save IP addresses with your data.</li>
+        </ul>
+
+        <h2>TAKING PART AND WITHDRAWING</h2>
+        <p>Taking part is voluntary and you can stop at any time by closing this page. At the end you will get a participant code. If you give that code to <span class="todo">JOHN PARAUNDA</span> before <span class="todo">OCTOBER 20, 2026</span>, your data will be deleted.</p>
+
+        <h2>RISKS AND BENEFITS</h2>
+        <p>Risks are minimal: a few minutes of screen time and finger use. If you feel any discomfort, stop. There is no payment involved, and our participation helps test whether a CAPTCHA can work for people with low vision.</p>
+
+        <h2>HOW WILL THE DATA BE USED?</h2>
+        <p>For a course project at <span class="todo">Mapúa Malayan Colleges Mindanao, BS in Computer Science, Year 2</span>. Results will be reported as group statistics. An anonymous copy of the data may be shared with <span class="todo">SIR CLYDE CHESTER BALAMAN</span>.</p>
+
+        <h2>IF YOU HAVE QUESTIONS, PLEASE CONTACT:</h2>
+        <p><span class="todo">JOHN PARAUNDA</span>, <span class="todo">jpparaunda@mcm.edu.ph</span>. Approval reference: <span class="todo">[APPROVAL / ETHICS REFERENCE]</span>.</p>
+
+        <fieldset>
+            <legend>Agreement</legend>
+            <label><input type="checkbox" id="chk-adult"> I am 18 years old or older.</label>
+            <label><input type="checkbox" id="chk-consent"> I have read this and I agree to take part.</label>
+        </fieldset>
+        <button type="button" id="btn-consent" disabled>Continue</button>
+    </section>
+
+    <!-- ============ STEP 2: ABOUT YOU ============ -->
+    <section id="step-about" aria-labelledby="h-about" hidden>
+        <h1 id="h-about" tabindex="-1">ABOUT THIS SETUP</h1>
+        <p class="muted">All questions are used only to compare groups. You can choose "PREFER NOT TO SAY".</p>
+        <form id="about-form" novalidate>
+            <fieldset>
+                <legend>How would you describe your vision when using a computer?</legend>
+                <label><input type="radio" name="group" value="sighted"> Typical vision, with or without glasses or contact lenses</label>
+                <label><input type="radio" name="group" value="low_vision"> Low vision (difficulty seeing that glasses do not fully correct)</label>
+                <label><input type="radio" name="group" value="prefer_not_to_say"> Prefer not to say</label>
+            </fieldset>
+            <fieldset>
+                <legend>Do you use any of these right now? (select all that apply)</legend>
+                <label><input type="checkbox" name="aids" value="none"> None</label>
+                <label><input type="checkbox" name="aids" value="browser_zoom"> Browser zoom</label>
+                <label><input type="checkbox" name="aids" value="os_magnifier"> Screen magnifier (Windows Magnifier, macOS Zoom, or similar)</label>
+                <label><input type="checkbox" name="aids" value="high_contrast"> High-contrast mode or dark mode</label>
+                <label><input type="checkbox" name="aids" value="screen_reader"> Screen reader</label>
+            </fieldset>
+            <fieldset>
+                <legend>What keyboard are you using?</legend>
+                <label><input type="radio" name="keyboard" value="laptop"> Laptop built-in keyboard</label>
+                <label><input type="radio" name="keyboard" value="external"> External keyboard</label>
+                <label><input type="radio" name="keyboard" value="other"> Something else</label>
+            </fieldset>
+            <p class="err" id="about-err" role="alert"></p>
+            <button type="submit" id="btn-about">Start</button>
+        </form>
+    </section>
+
+    <!-- ============ STEP 3: PLAY ============ -->
+    <section id="step-play" aria-labelledby="h-play" hidden>
+        <h1 id="h-play" tabindex="-1">THE GAME</h1>
+        <p id="progress" aria-live="polite">Practice Level</p>
+        <p class="muted">Press SPACE to jump over each red block. Use your normal setup and play naturally. Please keep this tab in front.</p>
+        <div id="gotcha-container"></div>
+        <p class="err" id="play-err" role="alert"></p>
+    </section>
+
+    <!-- ============ STEP 4: DONE ============ -->
+    <section id="step-done" aria-labelledby="h-done" hidden>
+        <h1 id="h-done" tabindex="-1">THANK YOU!</h1>
+        <p>Your participant code is:</p>
+        <p><span class="code" id="pid-out"></span></p>
+        <p>Write it down. If you later want your data deleted, give this code to <span class="todo">JOHN PARAUNDA</span> before <span class="todo">OCTOBER 20, 2026</span>. I can't find your data without it, because I simply don't know who you are.</p>
+        <p class="muted">YOU CAN CLOSE THIS PAGE NOW.</p>
+    </section>
+</main>
+
+<script src="/gotcha-widget.js"></script>
+<script>
+    const CONSENT_VERSION = "2026-10-v1";
+    const TIMED_LEVELS = 3;
+    const $ = (id) => document.getElementById(id);
+
+    if (document.querySelector(".todo")) $("draft-banner").style.display = "block";
+
+    function show(stepId) {
+        ["step-consent", "step-about", "step-play", "step-done"].forEach((s) => { $(s).hidden = s !== stepId; });
+        const h = $(stepId).querySelector("h1");
+        if (h) { h.focus(); window.scrollTo(0, 0); }
+    }
+
+    // ---- consent
+    const chkAdult = $("chk-adult"), chkConsent = $("chk-consent"), btnConsent = $("btn-consent");
+    const syncConsent = () => { btnConsent.disabled = !(chkAdult.checked && chkConsent.checked); };
+    chkAdult.addEventListener("change", syncConsent);
+    chkConsent.addEventListener("change", syncConsent);
+    btnConsent.addEventListener("click", () => show("step-about"));
+
+    // "None" excludes other assistive options
+    document.querySelectorAll('input[name="aids"]').forEach((box) => {
+        box.addEventListener("change", () => {
+            if (!box.checked) return;
+            document.querySelectorAll('input[name="aids"]').forEach((o) => {
+                if (o !== box && (box.value === "none" || o.value === "none")) o.checked = false;
+            });
+        });
+    });
+
+    // ---- registration, then play ----
+    let pid = null, widget = null, timedDone = 0;
+
+    $("about-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const err = $("about-err");
+        err.textContent = "";
+        const group = (document.querySelector('input[name="group"]:checked') || {}).value;
+        const keyboard = (document.querySelector('input[name="keyboard"]:checked') || {}).value;
+        const aids = [...document.querySelectorAll('input[name="aids"]:checked')].map((b) => b.value);
+        if (!group || !keyboard || !aids.length) {
+            err.textContent = "PLEASE ANSWER ALL THREE QUESTIONS (you can choose 'PREFER NOT TO SAY' or 'NONE').";
+            return;
+        }
+        $("btn-about").disabled = true;
+        try {
+            const res = await fetch("/collect/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ consent: true, adult: true, consent_version: CONSENT_VERSION, group, keyboard, aids }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+            pid = data.pid;
+        } catch (ex) {
+            err.textContent = "Could not start: " + ex.message;
+            $("btn-about").disabled = false;
+            return;
+        }
+        startPlay();
+    });
+
+    function startPlay() {
+        show("step-play");
+        widget = new GotchaWidget("gotcha-container", {
+            apiBase: window.location.origin,
+            collect: { pid },
+            prompt: {
+                title: "goTCHA",
+                subtitle: "a captcha game",
+                text: "Press the SPACE bar to jump over the red blocks.",
+                button: "PLAY",
+                showExit: true
+            },
+            onLevelDone,
+        });
+        window.__gotcha = widget.model; // handy for automated tests
+    }
+
+    function onLevelDone(data) {
+        const msg = `You cleared ${data.cleared} of ${data.n_obstacles}.`;
+        if (data.practice) {
+            $("progress").textContent = `Level 1 of ${TIMED_LEVELS}`;
+            return { title: "Practice done", lines: [msg, `Next: ${TIMED_LEVELS} recorded levels.`], button: "Start level 1" };
+        }
+        timedDone += 1;
+        if (timedDone >= TIMED_LEVELS) {
+            $("pid-out").textContent = pid;
+            setTimeout(() => show("step-done"), 1200);
+            return { title: "ALL DONE!", lines: [msg] };
+        }
+        $("progress").textContent = `Level ${timedDone + 1} of ${TIMED_LEVELS}`;
+        return { title: `Level ${timedDone} done`, lines: [msg], button: `Start level ${timedDone + 1}` };
+    }
+</script>
+</body>
+</html>

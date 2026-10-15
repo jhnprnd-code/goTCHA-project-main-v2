@@ -1,0 +1,8 @@
+# Environments and Secrets
+.env
+__pycache__/
+
+# Database and ML Data
+*.jsonl
+*.joblib
+*.log

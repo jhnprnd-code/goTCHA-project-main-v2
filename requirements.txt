@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pyjwt
+httpx
+requests
+python-multipart
+playwright
+scikit-learn
+numpy
+scipy
+joblib
+matplotlib
