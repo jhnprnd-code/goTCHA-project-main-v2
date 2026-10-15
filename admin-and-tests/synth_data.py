@@ -9,6 +9,8 @@ Records have source="synthetic" so train.py refuses them unless --allow-syntheti
 Synthetic humans have structure the 'adaptive' bot lacks (learning curve inside a level,
 fatigue, lapses, heavier late tail), so the pipeline has something to find.
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend"))
 import argparse
 import json
 import math

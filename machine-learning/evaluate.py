@@ -17,24 +17,16 @@ Protocol
     The near-duplicate rule catches reuse of the same recording, nothing more.
   * Unseen-attacker test: for each bot kind, retrain without it and score it.
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend"))
 import argparse
 import json
 import math
 import time
 from collections import Counter
 from pathlib import Path
-from gamecore import pair_strokes
 
 import matplotlib
-
-{
-    "python.analysis.extraPaths": [
-        "./backend",
-        "./gamecore",
-        "./machine_learning",
-        "./admin_and_tests"
-    ]
-}
 
 # pyright: reportMissingModuleSource=false
 matplotlib.use("Agg")
@@ -43,10 +35,12 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import LeaveOneGroupOut
+from sklearn.pipeline import make_pipeline as skl_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
 from gamecore import replay, pair_strokes
 
-    def pair_strokes(*args, **kwargs):
-        raise ImportError("gotcha_core is required to run evaluation")
+from features import COARSE_STEP_MS, FEATURES, estimate_step, extract
 
 from ml_common import (FEATURE_SETS, MIN_ATTEMPTS, TEST_ONLY_KINDS, Dataset, choose_threshold, dup_flags,
                        load_records, make_pipeline, oof_scores)

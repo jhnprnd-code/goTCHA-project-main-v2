@@ -13,6 +13,8 @@ Safety rails
     API refuses to load a synthetic model unless GOTCHA_ALLOW_SYNTHETIC_MODEL=1.
   * Warns when the threshold rests on fewer than 10 human participants.
 """
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "backend"))
 import argparse
 import json
 import time
