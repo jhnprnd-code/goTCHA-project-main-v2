@@ -1,6 +1,6 @@
 # goTCHA_project
 
-## 1. Run the program.
+## 1. Run program
 
 pip install -r requirements.txt
 cd backend
