@@ -2,15 +2,15 @@
 
 ## 0. BEFORE ANYONE PLAYS
 
-1. The consent form is version '2026-10-v3'. It states that the project has not been formally reviewed by an IRB or ethics committee, that participation is voluntary, and that a third-party tunnel provider may process visitors' IP addresses and connection metadata. Confirm with your instructor or school whether participant recruitment is permitted for this assignment before sharing the link.
+1. The consent form is version '2026-10-v4'. It states that the project has not been formally reviewed by an IRB or ethics committee, that participation is voluntary, and that a third-party tunnel provider may process visitors' IP addresses and connection metadata. Confirm with your instructor or school whether participant recruitment is permitted for this assignment before sharing the link.
 2. The form gives October 21, 2026 as the data-deletion request deadline. Confirm any extension directly with the researcher. If the consent wording changes, bump 'CONSENT_VERSION' in both 'frontend/collect.html' and 'backend/backend_api.py'.
 3. Participants must be 18 or older. The page enforces a checkbox, not verification.
 
 ## 1. Run the program.
 
 pip install -r requirements.txt
-uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot data
+uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 '--no-access-log' disables Uvicorn access logs. The application does not write visitors' IP addresses to study records; tunnel providers may separately process connection metadata under their own privacy policies.
 
 Participants open 'http://<your-address>:8000/collect'. Ways to reach it:
@@ -31,9 +31,8 @@ Consent -> 3 questions -> practice level -> 3 timed levels (~20 s each) -> parti
 
 ## 4. Monitoring and withdrawals
 
-- python data_status.py  # who has finished, stutter rate, timer resolutions seen
-python delete_participant.py P1A2B3C # withdrawal: removes that code from both files (restart the server after)
-- 
+- `python admin-and-tests/data_status.py` — who has finished, stutter rate, timer resolutions seen
+- Stop the server, then run `python admin-and-tests/delete_participant.py P1A2B3C` to remove that participant's records; restart the server afterward.
 
 ## 5. What is stored
 

@@ -15,6 +15,7 @@ Env: GOTCHA_MODEL (path), GOTCHA_THRESHOLD (override), GOTCHA_ALLOW_SYNTHETIC_MO
 """
 import logging
 import os
+import sys
 from collections import deque
 from pathlib import Path
 from typing import Deque, List, Optional
@@ -22,6 +23,9 @@ from typing import Deque, List, Optional
 import numpy as np
 
 log = logging.getLogger("gotcha")
+ML_DIR = str(Path(__file__).resolve().parent.parent / "machine-learning")
+if ML_DIR not in sys.path:
+    sys.path.insert(0, ML_DIR)
 
 
 class ModelRuntime:

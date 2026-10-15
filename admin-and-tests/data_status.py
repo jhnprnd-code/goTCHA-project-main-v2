@@ -1,7 +1,7 @@
 """
 Progress report on collected data. Run any time during collection:
 
-    python data_status.py [sessions.jsonl] [consent.jsonl]
+    python admin-and-tests/data_status.py [sessions.jsonl] [consent.jsonl]
 
 Shows who has finished, how many valid levels each participant has, and how often the
 frame gate (stutter) fired, so you can chase missing participants and calibrate the gate.
@@ -13,8 +13,9 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-sessions = Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "sessions.jsonl"
-consent = Path(sys.argv[2]) if len(sys.argv) > 2 else HERE / "consent.jsonl"
+DATA_DIR = HERE.parent / "backend"
+sessions = Path(sys.argv[1]) if len(sys.argv) > 1 else DATA_DIR / "sessions.jsonl"
+consent = Path(sys.argv[2]) if len(sys.argv) > 2 else DATA_DIR / "consent.jsonl"
 
 
 def read(p):

@@ -1,7 +1,7 @@
 """
 End-to-end test of the collection flow in a real (headless) Chromium.
 
-    python tests/e2e_collect.py
+    python admin-and-tests/e2e_collect.py
 
 Starts its own server on port 8100 with temp data files, so it never touches your real
 sessions.jsonl. Checks:
@@ -11,7 +11,6 @@ sessions.jsonl. Checks:
   * a main-thread stall is detected and the level is flagged for a redo (frame gate)
   * /verify returns "retry" for stuttering sessions, capped at MAX_RETRIES per IP
 """
-import importlib
 import json
 import os
 import random
@@ -35,6 +34,9 @@ BASE = f"http://127.0.0.1:{PORT}"
 tmp = Path(tempfile.mkdtemp(prefix="gotcha_e2e_"))
 env = dict(os.environ, GOTCHA_DATA=str(tmp / "sessions.jsonl"), GOTCHA_CONSENT=str(tmp / "consent.jsonl"),
            GOTCHA_ADMIN_KEY="test-admin", GOTCHA_DEBUG="1")
+env["PYTHONPATH"] = os.pathsep.join(
+    path for path in (str(BACKEND), env.get("PYTHONPATH", "")) if path
+)
 server = subprocess.Popen([sys.executable, "-m", "uvicorn", "backend_api:app", "--port", str(PORT),
                            "--no-access-log", "--log-level", "warning"], cwd=ROOT, env=env)
 results, failures = [], []
@@ -58,7 +60,7 @@ def wait_up():
 
 
 def api_guards():
-    base = {"consent": True, "adult": True, "consent_version": "2026-10-v3",
+    base = {"consent": True, "adult": True, "consent_version": "2026-10-v4",
             "group": "sighted", "keyboard": "laptop", "aids": ["none"]}
     check("start without consent -> 400", requests.post(BASE + "/collect/start", json={**base, "consent": False}).status_code == 400)
     check("start without adult -> 400", requests.post(BASE + "/collect/start", json={**base, "adult": False}).status_code == 400)
@@ -92,8 +94,8 @@ def verify_retry_cap(out):
 
 def play_level(page, jitter=25.0, stall=False):
     page.wait_for_function("window.__gotcha && window.__gotcha.state === 'GAME'", timeout=15000)
-    if stall:  # block the main thread for 350 ms every 1.5 s
-        page.evaluate("window.__stall = setInterval(() => { const s = performance.now(); while (performance.now() - s < 350); }, 1500)")
+    if stall:  # exceed the 500 ms frame-gap threshold
+        page.evaluate("window.__stall = setInterval(() => { const s = performance.now(); while (performance.now() - s < 650); }, 1500)")
     spawns, = page.evaluate("[window.__gotcha.spawns]")
     for s in spawns:
         target = obstacle_window(s)[2] + random.gauss(0, jitter)
@@ -111,7 +113,7 @@ def play_level(page, jitter=25.0, stall=False):
 
 def register_via_ui(page):
     page.goto(BASE + "/collect")
-    check("final consent version shown", "Consent version 2026-10-v3" in page.locator("#step-consent").inner_text())
+    check("final consent version shown", "Consent version 2026-10-v4" in page.locator("#step-consent").inner_text())
     check("draft placeholders removed", page.locator(".todo").count() == 0)
     check("continue disabled before consent", page.is_disabled("#btn-consent"))
     page.check("#chk-adult")

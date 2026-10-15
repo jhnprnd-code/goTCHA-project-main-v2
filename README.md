@@ -3,13 +3,12 @@
 ## 1. Run program
 
 pip install -r requirements.txt
-cd backend
 export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot data
 uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 '--no-access-log' disables Uvicorn access logs. Tunnel providers may separately process connection metadata under their own privacy policies.
 
-Participants open `http://<your-address>:8000/collect`. Ways to reach it:
-- **In person (best for the low-vision participants):** run it on laptop and let participants play on the machine or on theirs over the same Wi-Fi (`http://<your-LAN-IP>:8000/collect`). You can watch their setup and note problems.
+The consent form is version `2026-10-v4`; it states that this course project has not received formal IRB or ethics-committee review. Confirm recruitment is permitted with your instructor or school before sharing the link. Participants open `http://127.0.0.1:8000/collect` on the server computer or use the HTTPS URL printed by the tunnel. Ways to reach it:
+- **In person (best for the low-vision participants):** run it on the laptop and let participants play on that machine. You can watch their setup and note problems.
 - **Remote:** a tunnel from your laptop, e.g. `cloudflared tunnel --url http://localhost:8000` or `ngrok http 8000`. This gives an HTTPS link. The server is bound to localhost so it is not also exposed directly to your LAN.
 - Keep your laptop awake and the server running while people play. A restart is safe: the registry reloads from 'consent.jsonl', but anyone mid-level has to redo that level.
 
@@ -26,17 +25,18 @@ Consent -> 3 questions -> practice level -> 3 timed levels (~20 s each) -> parti
 
 ## 4. Monitoring and withdrawals
 
-- python data_status.py  # who has finished, stutter rate, timer resolutions seen
-- python delete_participant.py P1A2B3C # withdrawal: removes that code from both files (restart the server after)
+- `python admin-and-tests/data_status.py` — who has finished, stutter rate, timer resolutions seen
+- Stop the server, then run `python admin-and-tests/delete_participant.py P1A2B3C` to remove that participant's records; restart the server afterward.
   
 ## 5. What is stored
 
 - sessions.jsonl - one line per level: raw key events, level layout, telemetry, flags, participant code, group.
-- consent.jsonl - participant code, consent version and time, self-reported answers. No names, no emails, no IPs.
+- consent.jsonl - participant code, consent version and time, self-reported answers. The application does not write participant IPs to these study files; tunnel providers may process connection metadata under their own privacy policies.
 - Bot data is labeled separately and needs 'GOTCHA_ADMIN_KEY'; the public page cannot create bot-labeled rows.
 
 ## 6. Known limits
 
+- The bundled model card identifies the current model as synthetic. The API refuses to load it by default and uses its rule-based placeholder instead; this is not a validated CAPTCHA detector. Do not enable `GOTCHA_ALLOW_SYNTHETIC_MODEL` for real participants.
 - "Human" labels are self-attested by whoever opens the link. Share the link only with people you recruit.
 - Telemetry is reported by the browser, so it is evidence for calibration, not proof.
-- 'tests/e2e_collect.py' re-runs the whole flow in headless Chromium (about 2 minutes) using temporary files. Run it after any change.
+- 'admin-and-tests/e2e_collect.py' re-runs the whole flow in headless Chromium using temporary files. Run it after any change.

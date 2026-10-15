@@ -1,7 +1,7 @@
 """
 Delete everything for one participant code (withdrawal requests).
 
-    python delete_participant.py P1A2B3C [sessions.jsonl] [consent.jsonl]
+    python admin-and-tests/delete_participant.py P1A2B3C [sessions.jsonl] [consent.jsonl]
 
 Rewrites both files without that participant. Stop the server first (or restart it
 afterwards), because the server keeps the registry in memory.
@@ -14,8 +14,9 @@ if len(sys.argv) < 2:
     sys.exit(__doc__)
 pid = sys.argv[1].strip().upper()
 HERE = Path(__file__).resolve().parent
-sessions = Path(sys.argv[2]) if len(sys.argv) > 2 else HERE / "sessions.jsonl"
-consent = Path(sys.argv[3]) if len(sys.argv) > 3 else HERE / "consent.jsonl"
+DATA_DIR = HERE.parent / "backend"
+sessions = Path(sys.argv[2]) if len(sys.argv) > 2 else DATA_DIR / "sessions.jsonl"
+consent = Path(sys.argv[3]) if len(sys.argv) > 3 else DATA_DIR / "consent.jsonl"
 
 total = 0
 for path in (sessions, consent):

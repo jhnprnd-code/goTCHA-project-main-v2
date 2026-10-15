@@ -15,7 +15,7 @@ What changed from v1:
     collection. Bot labels require an admin key so the public page cannot poison
     the dataset.
 
-Run:  uvicorn backend_api:app --port 8000 --no-access-log
+Run:  uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 Env:  GOTCHA_SECRET, GOTCHA_SITE_SECRET, GOTCHA_ORIGINS, GOTCHA_DEBUG=1,
       GOTCHA_ADMIN_KEY, GOTCHA_DATA, GOTCHA_CONSENT
 """
@@ -70,7 +70,7 @@ MAX_SLOW_FRAME_RATIO = float(os.environ.get("GOTCHA_MAX_SLOW_RATIO", "0.10"))
 MIN_AVG_FPS = float(os.environ.get("GOTCHA_MIN_FPS", "20.0"))
 
 SCHEMA_VERSION = 2
-CONSENT_VERSION = "2026-10-v3"   # bump when the consent text on collect.html changes
+CONSENT_VERSION = "2026-10-v4"   # bump when the consent text on collect.html changes
 CHALLENGE_TTL_S = 90
 TOKEN_TTL_S = 120
 RATE_LIMIT_PER_MIN = 30
@@ -489,7 +489,7 @@ async def verify(payload: VerificationRequest, request: Request):
                 v = Verdict("retry", [f"Unstable frame timing: {problem}"], feats)
             else:
                 v = Verdict("inconclusive", ["Repeated unstable frame timing."], feats)
-        if ml_engine:
+        elif ml_engine:
             rec = {"spawns_ms": ch.spawns_ms, "events": [{"k": e.k, "t": e.t} for e in payload.events]}
             v_dict = ml_engine.judge(rec)
             v = Verdict(v_dict["verdict"], [v_dict["reason"]], feats)
