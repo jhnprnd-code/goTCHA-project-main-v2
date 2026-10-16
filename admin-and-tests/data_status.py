@@ -4,7 +4,7 @@ Progress report on collected data. Run any time during collection:
     python admin-and-tests/data_status.py [sessions.jsonl] [consent.jsonl]
 
 Shows who has finished, how many valid levels each participant has, and how often the
-frame gate (stutter) fired, so you can chase missing participants and calibrate the gate.
+frame gate (stutter) fired, so the admin can chase missing participants and calibrate the gate.
 """
 import json
 import statistics
