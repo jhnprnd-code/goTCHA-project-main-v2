@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "features": [
+    "err_std",
+    "err_mad",
+    "err_iqr",
+    "err_range",
+    "near_perfect_frac",
+    "dwell_std",
+    "dwell_cv",
+    "err_skew",
+    "err_bowley",
+    "dwell_skew",
+    "err_slope",
+    "absdev_slope",
+    "half_mean_shift",
+    "half_logvar_ratio",
+    "err_lag1",
+    "diff_ratio",
+    "dwell_slope",
+    "err_dwell_corr"
+  ],
+  "feature_set": "default",
+  "threshold": 0.1404271875753017,
+  "target_frr": 0.05,
+  "C": 0.3,
+  "min_attempts": 5,
+  "coarse_step_ms": 15.0,
+  "synthetic": false,
+  "trained_at": "2026-10-17 12:58:40",
+  "n_human_sessions": 27,
+  "n_human_pids": 9,
+  "n_bot_sessions": 48,
+  "bot_kinds": {
+    "pw_perfect": 12,
+    "pw_gauss": 12,
+    "pw_fitted": 12,
+    "pw_adaptive": 12
+  },
+  "oof_auc": 0.7229938271604939
+}

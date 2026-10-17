@@ -1,0 +1,204 @@
+{
+  "n_sessions": 87,
+  "far": {
+    "rate": 0.6,
+    "lo": 0.4166666666666667,
+    "hi": 0.7833333333333333,
+    "n": 60,
+    "pids": 20
+  },
+  "frr_strict": {
+    "rate": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n": 27,
+    "pids": 9
+  },
+  "frr_model": {
+    "rate": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n": 27,
+    "pids": 9
+  },
+  "auc": 0.7203703703703703,
+  "eer": 0.36018518518518516,
+  "per_kind": {
+    "pw_adaptive": {
+      "far": {
+        "rate": 0.75,
+        "lo": 0.5,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "far_nodup": {
+        "rate": 0.75,
+        "lo": 0.5,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.8456790123456789,
+      "sessions": 12,
+      "unscorable": 0,
+      "test_only": false
+    },
+    "pw_fitted": {
+      "far": {
+        "rate": 0.9166666666666666,
+        "lo": 0.75,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "far_nodup": {
+        "rate": 0.9166666666666666,
+        "lo": 0.75,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.6450617283950617,
+      "sessions": 12,
+      "unscorable": 0,
+      "test_only": false
+    },
+    "pw_gauss": {
+      "far": {
+        "rate": 0.75,
+        "lo": 0.5,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "far_nodup": {
+        "rate": 0.75,
+        "lo": 0.5,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.7345679012345678,
+      "sessions": 12,
+      "unscorable": 0,
+      "test_only": false
+    },
+    "pw_perfect": {
+      "far": {
+        "rate": 0.08333333333333333,
+        "lo": 0.0,
+        "hi": 0.25,
+        "n": 12,
+        "pids": 4
+      },
+      "far_nodup": {
+        "rate": 0.8333333333333334,
+        "lo": 0.6666666666666666,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.7777777777777778,
+      "sessions": 12,
+      "unscorable": 0,
+      "test_only": false
+    },
+    "pw_replay": {
+      "far": {
+        "rate": 0.5,
+        "lo": 0.16666666666666666,
+        "hi": 0.8333333333333334,
+        "n": 12,
+        "pids": 4
+      },
+      "far_nodup": {
+        "rate": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.5987654320987654,
+      "sessions": 12,
+      "unscorable": 0,
+      "test_only": true
+    }
+  },
+  "per_group": {
+    "low_vision": {
+      "rate": 0.0,
+      "lo": 0.0,
+      "hi": 0.0,
+      "n": 12,
+      "pids": 4
+    },
+    "prefer_not_to_say": {
+      "rate": 0.0,
+      "lo": 0.0,
+      "hi": 0.0,
+      "n": 3,
+      "pids": 1
+    },
+    "sighted": {
+      "rate": 0.0,
+      "lo": 0.0,
+      "hi": 0.0,
+      "n": 12,
+      "pids": 4
+    }
+  },
+  "unseen": {
+    "pw_adaptive": {
+      "far": {
+        "rate": 0.8333333333333334,
+        "lo": 0.5,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.7500000000000001
+    },
+    "pw_fitted": {
+      "far": {
+        "rate": 1.0,
+        "lo": 1.0,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.35493827160493824
+    },
+    "pw_gauss": {
+      "far": {
+        "rate": 0.8333333333333334,
+        "lo": 0.6666666666666666,
+        "hi": 1.0,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.7006172839506173
+    },
+    "pw_perfect": {
+      "far": {
+        "rate": 0.08333333333333333,
+        "lo": 0.0,
+        "hi": 0.25,
+        "n": 12,
+        "pids": 4
+      },
+      "auc": 0.2191358024691358
+    }
+  },
+  "synthetic": false,
+  "confusion": {
+    "human_accepted": 27,
+    "human_not_accepted": 0,
+    "bot_accepted": 36,
+    "bot_not_accepted": 24
+  },
+  "pass_within_3": {
+    "passes": 9,
+    "people": 9
+  }
+}

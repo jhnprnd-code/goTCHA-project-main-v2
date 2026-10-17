@@ -6,18 +6,32 @@ Usage:
   python gotcha_tools.py calibrate --sessions final_sessions.jsonl
 """
 import argparse
-
 import json
+import os
 import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
 import statistics
 
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
+BACKEND_DIR = ROOT / "backend"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 from bot_lib import KINDS
 
 def run_bots(args):
     """Runs all bot kinds automatically."""
+    human_data = str(Path(args.human_data).resolve()) if args.human_data else ""
+    env = {
+        **os.environ,
+        "GOTCHA_ADMIN_KEY": args.admin_key,
+        "PYTHONPATH": os.pathsep.join(
+            path for path in (str(BACKEND_DIR), os.environ.get("PYTHONPATH", "")) if path
+        ),
+    }
     print(f"Starting bot batch run ({args.runs} runs per kind)...")
     
     for kind in KINDS:
@@ -27,19 +41,20 @@ def run_bots(args):
             "--kind", kind,
             "--runs", str(args.runs),
             "--levels", "3",
-            "--concurrent", "1",
-            "--admin-key", args.admin_key
+            "--concurrent", str(args.concurrent),
+            "--base", args.base,
         ]
         
         if kind in ("fitted", "replay"):
             if not args.human_data:
                 print(f"Skipping {kind}: requires --human-data")
                 continue
-            cmd.extend(["--human-data", args.human_data])
+            cmd.extend(["--pool", human_data])
             
-        res = subprocess.run(cmd)
+        res = subprocess.run(cmd, cwd=HERE, env=env)
         if res.returncode:
             print(f"!! {kind} bots FAILED (exit {res.returncode})")
+            raise SystemExit(res.returncode)
             
     print("\nBot batch complete.")
 
@@ -139,9 +154,11 @@ if __name__ == "__main__":
     sub = parser.add_subparsers(dest="cmd", required=True)
     
     p_bots = sub.add_parser("bots")
-    p_bots.add_argument("--admin-key", required=True)
+    p_bots.add_argument("--admin-key", default=os.environ.get("GOTCHA_ADMIN_KEY", ""))
     p_bots.add_argument("--human-data", default="")
     p_bots.add_argument("--runs", type=int, default=4)
+    p_bots.add_argument("--base", default="http://127.0.0.1:8000")
+    p_bots.add_argument("--concurrent", type=int, default=1)
     
     p_merge = sub.add_parser("merge")
     p_merge.add_argument("--sessions", nargs="+", required=True)
@@ -154,6 +171,9 @@ if __name__ == "__main__":
     p_cal.add_argument("--sessions", required=True)
     
     args = parser.parse_args()
-    if args.cmd == "bots": run_bots(args)
+    if args.cmd == "bots":
+        if not args.admin_key:
+            raise SystemExit("Set GOTCHA_ADMIN_KEY or pass --admin-key to label bot runs.")
+        run_bots(args)
     elif args.cmd == "merge": run_merge(args)
     elif args.cmd == "calibrate": run_calibrate(args)

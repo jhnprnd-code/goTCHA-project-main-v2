@@ -10,10 +10,16 @@ import asyncio
 import json
 import os
 import random
+import sys
 import time
 import requests
 from pathlib import Path
 from playwright.async_api import async_playwright
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent / "backend"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 from bot_lib import KINDS, build_events, gen_offsets, load_human_pool
 
 INTENTS = []
@@ -32,15 +38,26 @@ async def run_one(browser, idx, args, pool, sem):
         timing = "gauss" if args.kind == "dom_untrusted" else args.kind
         
         # Fast-path registration via API 
-        r = await asyncio.to_thread(lambda: requests.post(f"{args.base}/collect/start", timeout=15, json={
-            "consent": True, "adult": True, "consent_version": args.consent_version, "group": "sighted",
-            "keyboard": "other", "aids": ["none"], "label": "bot", "bot_kind": f"pw_{kind}",
-            "admin_key": args.admin_key}))
-        
+        r = await asyncio.to_thread(
+            lambda: requests.post(
+                f"{args.base}/collect/start",
+                timeout=15,
+                json={
+                    "consent": True,
+                    "adult": True,
+                    "consent_version": args.consent_version,
+                    "group": "sighted",
+                    "keyboard": "other",
+                    "aids": ["none"],
+                    "label": "bot",
+                    "bot_kind": f"pw_{kind}",
+                    "admin_key": args.admin_key,
+                },
+            )
+        )
         if r.status_code != 200:
-            print(f"[run {idx}] register failed: {r.status_code} {r.text}")
-            return
-            
+            raise RuntimeError(f"[run {idx}] register failed: {r.status_code} {r.text}")
+
         pid = r.json()["pid"]
         ctx = await browser.new_context(viewport={"width": 1280, "height": 900})
         page = await ctx.new_page()
@@ -52,10 +69,9 @@ async def run_one(browser, idx, args, pool, sem):
         await page.click("#gotcha-container button")
 
         for lvl in range(args.levels + 1):
-            # Target the MVC model state
-            await page.wait_for_function("window.__gotcha && window.__gotcha.model && window.__gotcha.model.state === 'GAME'", timeout=20000)
+            await page.wait_for_function("window.__gotcha && window.__gotcha.state === 'GAME'", timeout=20000)
             page_now, t0, spawns = await page.evaluate(
-                "[performance.now(), window.__gotcha.model.t0, window.__gotcha.model.spawns]")
+                "[performance.now(), window.__gotcha.t0, window.__gotcha.spawns]")
             
             py_now = time.perf_counter()
             lvl_now = page_now - t0
@@ -71,7 +87,7 @@ async def run_one(browser, idx, args, pool, sem):
                 else:
                     await (page.keyboard.down("Space") if ev["k"] == "d" else page.keyboard.up("Space"))
                     
-            await page.wait_for_function("window.__gotcha.model.state === 'RESULT'", timeout=60000)
+            await page.wait_for_function("window.__gotcha.state === 'RESULT'", timeout=60000)
             if lvl < args.levels:
                 await page.click("#gotcha-container button")
                 
@@ -85,10 +101,15 @@ async def main(args):
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(headless=not args.headed)
         try:
-            await asyncio.gather(
+            outcomes = await asyncio.gather(
                 *[run_one(browser, i, args, pool, sem) for i in range(args.runs)], 
                 return_exceptions=True
             )
+            failures = [outcome for outcome in outcomes if isinstance(outcome, Exception)]
+            for failure in failures:
+                print(f"Bot run failed: {type(failure).__name__}: {failure}", file=sys.stderr)
+            if failures:
+                raise SystemExit(f"{len(failures)} of {args.runs} bot runs failed.")
         finally:
             await browser.close()
             if args.intent_out:
