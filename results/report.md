@@ -13,7 +13,7 @@ Generated 2026-10-17 12:59 from C:\Users\USER\Desktop\Python\pythoncore-3.14-64\
 ## Headline (deployed system = model + near-duplicate rule)
 
 | | accepted | not accepted |
-|---|---|---|
+| --- | --- | --- |
 | human sessions | 27 | 0 |
 | bot sessions | 36 | 24 |
 
