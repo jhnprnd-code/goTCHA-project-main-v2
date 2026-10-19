@@ -11,6 +11,8 @@ uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-acce
 
 On Windows, `run_gotcha.bat` starts the server (set `GOTCHA_ADMIN_KEY` in your environment first if you will collect bot data).
 
+To get a single-file Windows app instead, run `build_exe.bat`. It produces `dist\goTCHA.exe`, which starts the server on `http://127.0.0.1:8000`, opens the `/collect` page, and keeps `sessions.jsonl`, `consent.jsonl` and an optional `model.joblib` in the same folder as the `.exe`. Set `GOTCHA_PORT` to change the port.
+
 `--no-access-log` disables Uvicorn access logs. Tunnel providers may separately process connection metadata under their own privacy policies.
 
 The consent form is version `2026-10-v5`; it states that this course project has not received formal IRB or ethics-committee review and that the app is a research pilot, not a working security service. Confirm recruitment is permitted with your instructor or school before sharing the link. Participants open `http://127.0.0.1:8000/collect` on the server computer or use the HTTPS URL printed by the tunnel. Ways to reach it:

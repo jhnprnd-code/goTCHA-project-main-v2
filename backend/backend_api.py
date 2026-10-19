@@ -27,6 +27,7 @@ import math
 import os
 import secrets
 import statistics
+import sys
 import time
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
@@ -46,6 +47,11 @@ from model_runtime import load_model
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("gotcha")
 HERE = Path(__file__).resolve().parent
+# Packaged (PyInstaller) build: study data and an optional model.joblib live next to the .exe,
+# while bundled read-only files (frontend/) are unpacked under sys._MEIPASS.
+FROZEN = getattr(sys, "frozen", False)
+APP_DIR = Path(sys.executable).resolve().parent if FROZEN else HERE
+FRONTEND_DIR = Path(sys._MEIPASS) / "frontend" if FROZEN else HERE.parent / "frontend"
 
 # ------------------------------------------------------------------ config
 SECRET_KEY = os.environ.get("GOTCHA_SECRET")
@@ -62,8 +68,8 @@ ALLOWED_ORIGINS = os.environ.get(
     "GOTCHA_ORIGINS", "http://localhost:9000,http://127.0.0.1:9000"
 ).split(",")
 DEBUG = os.environ.get("GOTCHA_DEBUG") == "1"  # DEBUG leaks reasons to the client
-DATA_FILE = Path(os.environ.get("GOTCHA_DATA", HERE / "sessions.jsonl"))
-CONSENT_FILE = Path(os.environ.get("GOTCHA_CONSENT", HERE / "consent.jsonl"))
+DATA_FILE = Path(os.environ.get("GOTCHA_DATA", APP_DIR / "sessions.jsonl"))
+CONSENT_FILE = Path(os.environ.get("GOTCHA_CONSENT", APP_DIR / "consent.jsonl"))
 
 # Frame-quality gate. Defaults are relaxed to tolerate screen recorders. UNCALIBRATED: check
 # against collected telemetry (see `gotcha_tools.py calibrate`).
@@ -97,7 +103,7 @@ class Challenge:
         return current_time - self.issued_at > ttl
 
 
-ml_engine = load_model(HERE / "model.joblib")
+ml_engine = load_model(APP_DIR / "model.joblib")
 
 
 CHALLENGES: Dict[str, Challenge] = {}
@@ -561,7 +567,6 @@ async def collect_submit(req: CollectSubmit):
 
 # -----------------------------static-----------------------------
 _NO_CACHE = {"Cache-Control": "no-cache"}
-FRONTEND_DIR = HERE.parent / "frontend"
 
 
 @app.get("/collect")
