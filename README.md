@@ -1,4 +1,4 @@
-# goTCHA_project
+# goTCHA-project
 
 ## 1. Run program
 
