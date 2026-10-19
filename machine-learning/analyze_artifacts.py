@@ -27,7 +27,7 @@ a = ap.parse_args()
 
 
 def read(p):
-    return [json.loads(l) for l in Path(p).read_text().splitlines() if l.strip()]
+    return [json.loads(line) for line in Path(p).read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
 intents = defaultdict(dict)
@@ -59,8 +59,6 @@ for pid, rs in recs.items():
               in zip(zip(want[0::2], want[1::2]), zip(got[0::2], got[1::2]))]
         k["dwell"] += [g - w for w, g in dw]
 
-lines = ["| bot kind | levels | usable | stalled | down: mean / sd / max |Δ| (ms) | up: mean / sd (ms) | dwell error: mean / sd (ms) |",
-         "|---|---|---|---|---|---|---|"[:0] + "---|---|---|---|---|---|---|---|"[:0]]
 lines = ["| bot kind | levels | usable | stalled | down: mean / sd / max abs (ms) | up: mean / sd (ms) | dwell error: mean / sd (ms) |",
          "|---|---|---|---|---|---|---|"]
 for kind, k in sorted(by_kind.items()):

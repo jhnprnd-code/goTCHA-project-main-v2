@@ -17,10 +17,16 @@ fitted and replay need a pool of real human sessions (--pool sessions.jsonl).
 import json
 import math
 import random
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from gamecore import obstacle_window, pair_strokes, replay
+# gamecore lives in backend/; make this module importable without PYTHONPATH tweaks.
+BACKEND_DIR = Path(__file__).resolve().parent.parent / "backend"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
+from gamecore import obstacle_window, pair_strokes, replay  # noqa: E402
 
 KINDS = ["perfect", "gauss", "fitted", "adaptive", "replay"]
 Offsets = List[Tuple[Optional[float], float]]   # per obstacle: (timing error ms | None = skip, dwell ms)

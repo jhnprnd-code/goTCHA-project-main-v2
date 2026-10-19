@@ -171,7 +171,7 @@ def main():
         play_level(page, stall=True)
         check("stalled level shows redo message", "do that again" in page.inner_text("#gotcha-container").lower())
         page.click("#gotcha-container button")           # Try again
-        cleared = play_level(page)
+        play_level(page)
         check("redo after stall is accepted as practice", "Practice done" in page.inner_text("#gotcha-container"))
         browser.close()
 
@@ -191,7 +191,6 @@ def main():
     n_retry = sum(1 for o in out if o.get("retry"))
     check("/verify retry cap: 3 retries then no more excuses", n_retry == 3 and sum(1 for o in out if not o.get("retry") and not o.get("success")) == 1,
           f"retries={n_retry}")
-    levels = sorted(collect, key=lambda r: r["ts"])
     print(f"\n{len(collect)} collect records, data in {tmp}")
     print(f"{len(results) - len(failures)}/{len(results)} checks passed")
 

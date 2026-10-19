@@ -17,7 +17,8 @@ What changed from v1:
 
 Run:  uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 Env:  GOTCHA_SECRET, GOTCHA_SITE_SECRET, GOTCHA_ORIGINS, GOTCHA_DEBUG=1,
-      GOTCHA_ADMIN_KEY, GOTCHA_DATA, GOTCHA_CONSENT
+      GOTCHA_ADMIN_KEY, GOTCHA_DATA, GOTCHA_CONSENT,
+      GOTCHA_MAX_FRAME_GAP_MS, GOTCHA_MAX_SLOW_RATIO, GOTCHA_MIN_FPS (frame-quality gate)
 """
 import hmac
 import json
@@ -32,15 +33,15 @@ from collections import defaultdict, deque
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Deque, Dict, List, Literal, Optional, Tuple
-from model_runtime import load_model
 
 import jwt  # type: ignore[import-not-found]
 from fastapi import FastAPI, HTTPException, Request  # type: ignore[import-not-found]
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore[import-not-found]
 from fastapi.responses import FileResponse  # type: ignore[import-not-found]
 from pydantic import BaseModel, Field  # type: ignore[import-not-found]
-from gamecore import (GAME, N_OBSTACLES, AIRTIME_MS, LEAD_IN_MS, MIN_GAP_MS, MAX_GAP_MS,
-                         make_layout, replay, obstacle_window)
+
+from gamecore import GAME, make_layout, replay
+from model_runtime import load_model
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("gotcha")
@@ -64,10 +65,11 @@ DEBUG = os.environ.get("GOTCHA_DEBUG") == "1"  # DEBUG leaks reasons to the clie
 DATA_FILE = Path(os.environ.get("GOTCHA_DATA", HERE / "sessions.jsonl"))
 CONSENT_FILE = Path(os.environ.get("GOTCHA_CONSENT", HERE / "consent.jsonl"))
 
-# Frame-quality gate. UNCALIBRATED: check against collected telemetry.
-MAX_FRAME_GAP_MS = float(os.environ.get("GOTCHA_MAX_FRAME_GAP_MS", "250.0"))
-MAX_SLOW_FRAME_RATIO = float(os.environ.get("GOTCHA_MAX_SLOW_RATIO", "0.10"))
-MIN_AVG_FPS = float(os.environ.get("GOTCHA_MIN_FPS", "20.0"))
+# Frame-quality gate. Defaults are relaxed to tolerate screen recorders. UNCALIBRATED: check
+# against collected telemetry (see `gotcha_tools.py calibrate`).
+MAX_FRAME_GAP_MS = float(os.environ.get("GOTCHA_MAX_FRAME_GAP_MS", "500.0"))
+MAX_SLOW_FRAME_RATIO = float(os.environ.get("GOTCHA_MAX_SLOW_RATIO", "0.30"))
+MIN_AVG_FPS = float(os.environ.get("GOTCHA_MIN_FPS", "10.0"))
 
 SCHEMA_VERSION = 2
 CONSENT_VERSION = "2026-10-v5"   # bump when the consent text on collect.html changes
@@ -79,45 +81,10 @@ MAX_LEVELS_PER_PID = 12
 MAX_RETRIES = 3                  # stutter-retries per IP per 10 min before we stop excusing it
 RETRY_WINDOW_S = 600
 
-# Relaxed limits to account for screen recorders
-MAX_FRAME_GAP_MS = 500.0         # Increased from 250.0
-MAX_SLOW_FRAME_RATIO = 0.30      # Increased from 0.10
-MIN_AVG_FPS = 10.0               # Decreased from 20.0
-
-# ----------------game params (shared w/ client)------------------------- 
-GAME = {
-    "world_w": 800, "world_h": 300, "ground_y": 250,
-    "player_x": 100, "player_size": 48, "obstacle_size": 48,
-    "speed_px_s": 300.0,
-    "gravity_px_s2": 3000.0,
-    "jump_v_px_s": 1000.0,
-}
-N_OBSTACLES = 8
-LEAD_IN_MS = 2000
-MIN_GAP_MS, MAX_GAP_MS = 1300, 2600
-
-_V, _G = GAME["jump_v_px_s"], GAME["gravity_px_s2"]
-AIRTIME_MS = 2 * _V / _G * 1000.0
-_root = math.sqrt(_V ** 2 - 2 * _G * GAME["obstacle_size"])
-CLEAR_FROM_MS = (_V - _root) / _G * 1000.0
-CLEAR_UNTIL_MS = (_V + _root) / _G * 1000.0
+# Game physics and level layout live in gamecore.py (shared with the bots and the ML code).
 
 
-def obstacle_window(spawn_ms: float) -> Tuple[float, float, float]:
-    """(lo, hi, center): jump-start times (ms since level start) that clear this obstacle."""
-    w, px, ps = GAME["world_w"], GAME["player_x"], GAME["player_size"]
-    osz, speed = GAME["obstacle_size"], GAME["speed_px_s"]
-    overlap_start = spawn_ms + (w - (px + ps)) / speed * 1000.0
-    overlap_end = spawn_ms + (w - (px - osz)) / speed * 1000.0
-    lo = overlap_end - CLEAR_UNTIL_MS
-    hi = overlap_start - CLEAR_FROM_MS
-    return lo, hi, (lo + hi) / 2.0
-
-
-assert obstacle_window(0)[1] > obstacle_window(0)[0], "physics params make the level unwinnable"
-
-
-# ------------------------------state--------------------------------- 
+# ------------------------------state---------------------------------
 @dataclass
 class Challenge:
     spawns_ms: List[int]
@@ -199,17 +166,6 @@ class Telemetry(BaseModel):
     repeat_count: int = Field(0, ge=0, le=100_000)
     ua: str = Field("", max_length=300)
 
-class BaseEvaluator(ABC):
-    """Abstract interface defining polymorphic behavior for all rule or ML engines."""
-    
-    @abstractmethod
-    def precheck(self, ch: Challenge, events: List[Event], elapsed_ms: float):
-        pass
-
-    @abstractmethod
-    def behavior(self, ch: Challenge, strokes: List[list], feats: dict) -> Verdict:
-        pass
-
 
 class VerificationRequest(BaseModel):
     nonce: str = Field(max_length=64)
@@ -235,45 +191,24 @@ class CollectStart(BaseModel):
     admin_key: str = Field("", max_length=200)
 
 
-# ---------------------------- verdict --------------------------------- 
+# ---------------------------- verdict ---------------------------------
 @dataclass
 class Verdict:
-    verdict: str            # "human",  "bot", "inconclusive"
+    verdict: str            # "human", "bot", "inconclusive", "retry"
     reasons: List[str]
     features: dict
 
 
-def replay(spawns: List[float], strokes: List[list], attribution_ms: float = 1000.0):
-    
-    """
-    Replays the player's key strokes against the level, exactly as the server physics sees it.
-    Shared by the rule engine, the feature extractor, and the evaluation code so users can
-    never disagree about what happened.
-    Returns (accepted, per_obstacle)
-      accepted:     [(down_ms, dwell_ms|None)] jumps that actually started (not airborne)
-      per_obstacle: one dict per obstacle, in order:
-                    {"center", "cleared", "err" (jump_start - ideal, ms) | None, "dwell" | None}
-    """
-    accepted, last_start = [], -math.inf
-    for down, up in strokes:
-        if down >= last_start + AIRTIME_MS:
-            accepted.append((down, (up - down) if up is not None else None))
-            last_start = down
+class BaseEvaluator(ABC):
+    """Abstract interface defining polymorphic behavior for all rule or ML engines."""
 
-    used, per_obstacle = set(), []
-    for spawn in spawns:
-        lo, hi, center = obstacle_window(spawn)
-        cleared = any(lo <= s <= hi for s, _ in accepted)
-        cands = [(abs(s - center), i) for i, (s, _) in enumerate(accepted)
-                 if i not in used and abs(s - center) <= attribution_ms]
-        err = dwell = None
-        if cands:
-            _, i = min(cands)
-            used.add(i)
-            err = accepted[i][0] - center
-            dwell = accepted[i][1]
-        per_obstacle.append({"center": center, "cleared": cleared, "err": err, "dwell": dwell})
-    return accepted, per_obstacle
+    @abstractmethod
+    def precheck(self, ch: Challenge, events: List[Event], elapsed_ms: float):
+        pass
+
+    @abstractmethod
+    def behavior(self, ch: Challenge, strokes: List[list], feats: dict) -> Verdict:
+        pass
 
 
 class VerificationEngine(BaseEvaluator):
@@ -434,12 +369,16 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def add_isolation_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+    return response
+
+
 def _new_challenge(meta: Optional[dict] = None) -> Tuple[str, Challenge]:
-    spawns, t = [], float(LEAD_IN_MS)
-    for _ in range(N_OBSTACLES):
-        spawns.append(round(t))
-        t += _rng.uniform(MIN_GAP_MS, MAX_GAP_MS)
-    level_end = spawns[-1] + (GAME["world_w"] + GAME["obstacle_size"]) / GAME["speed_px_s"] * 1000.0
+    spawns, level_end = make_layout(_rng)
     nonce = secrets.token_urlsafe(16)
     ch = Challenge(spawns, level_end, time.time(), meta or {})
     CHALLENGES[nonce] = ch
@@ -459,13 +398,6 @@ async def get_challenge(request: Request):
         raise HTTPException(503, "Busy.")
     nonce, ch = _new_challenge()
     return _challenge_body(nonce, ch)
-
-@app.middleware("http")
-async def add_isolation_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
-    response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
-    return response
 
 
 @app.post("/verify")
@@ -627,14 +559,17 @@ async def collect_submit(req: CollectSubmit):
             "detail": detail}
 
 
-# -----------------------------static----------------------------- 
+# -----------------------------static-----------------------------
 _NO_CACHE = {"Cache-Control": "no-cache"}
-FRONTEND_DIR = HERE.parent / "frontend" # Add this line
+FRONTEND_DIR = HERE.parent / "frontend"
+
 
 @app.get("/collect")
 async def collect_page():
     return FileResponse(FRONTEND_DIR / "collect.html", headers=_NO_CACHE)
 
+
 @app.get("/gotcha-widget.js")
 async def widget_js():
     return FileResponse(FRONTEND_DIR / "gotcha-widget.js", media_type="application/javascript", headers=_NO_CACHE)
+

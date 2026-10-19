@@ -8,10 +8,13 @@
 
 ## 1. Run the program
 
+```bash
 pip install -r requirements.txt
 export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot data
 uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
-'--no-access-log' disables Uvicorn access logs. The application does not write visitors' IP addresses to study records; tunnel providers may separately process connection metadata under their own privacy policies.
+```
+
+`--no-access-log` disables Uvicorn access logs. The application does not write visitors' IP addresses to study records; tunnel providers may separately process connection metadata under their own privacy policies.
 
 Participants open 'http://YOUR_ADDRESS:8000/collect'. Ways to reach it:
 
@@ -47,4 +50,4 @@ Consent -> 3 questions -> practice level -> 3 timed levels (~20 s each) -> parti
 
 - "Human" labels are self-attested by whoever opens the link. Share the link only with people you recruit.
 - Telemetry is reported by the browser, so it is evidence for calibration, not proof.
-- 'admin-and-tests/e2e_collect.py' re-runs the whole flow in headless Chromium (about 2 minutes) using temporary files. Run it after any change
+- 'admin-and-tests/e2e_collect.py' re-runs the whole flow in headless Chromium (about 2 minutes) using temporary files. Run it after any change.
