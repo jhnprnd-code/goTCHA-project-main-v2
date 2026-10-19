@@ -6,3 +6,7 @@ __pycache__/
 *.jsonl
 *.joblib
 *.log
+
+# PyInstaller output (see build_exe.bat)
+build/
+dist/
