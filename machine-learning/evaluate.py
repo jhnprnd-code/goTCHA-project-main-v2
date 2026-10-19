@@ -27,21 +27,17 @@ from collections import Counter
 from pathlib import Path
 
 import matplotlib
-
-# pyright: reportMissingModuleSource=false
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # headless backend; must be set before importing pyplot
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score, roc_curve
-from sklearn.model_selection import LeaveOneGroupOut
 from sklearn.pipeline import make_pipeline as skl_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from gamecore import replay, pair_strokes
 
 from features import COARSE_STEP_MS, FEATURES, estimate_step, extract
-
+from gamecore import pair_strokes
 from ml_common import (FEATURE_SETS, MIN_ATTEMPTS, TEST_ONLY_KINDS, Dataset, choose_threshold, dup_flags,
                        load_records, make_pipeline, oof_scores)
 
@@ -167,7 +163,7 @@ per_group = {g: cluster_rate(~accepted, human & (ds.group == g)) for g in groups
 # pass within 3 attempts: first 3 sessions of each human
 passes, n_h = 0, 0
 for p in sorted(set(ds.pid[human])):
-    idx = [i for i in np.where(ds.pid == p)[0]]
+    idx = list(np.where(ds.pid == p)[0])
     idx.sort(key=lambda i: (recs[i].get("ts", 0), i))
     n_h += 1
     passes += int(any(accepted[i] for i in idx[:3]))
@@ -288,7 +284,7 @@ L.append(f"- Sessions used: {n} ({int(human.sum())} human from {len(set(ds.pid[h
 L.append(f"- Skipped: {dict(skipped)}")
 L.append(f"- Unscorable (fewer than {MIN_ATTEMPTS} attempts, or timer step above {COARSE_STEP_MS} ms): "
          f"{dict(Counter(ds.kind[~ds.scorable].tolist()))}")
-L.append(f"- Human groups: {dict(Counter(ds.group[human & (ds.pid == ds.pid)].tolist()))} sessions")
+L.append(f"- Human groups: {dict(Counter(ds.group[human].tolist()))} sessions")
 L.append(f"- Features: `{args.features}` ({len(names)}), logistic regression C={args.C}, "
          f"target FRR {args.target_frr:.0%}, threshold chosen inside each training fold\n")
 
@@ -349,7 +345,7 @@ L += [
 (out / "report.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
 metrics = {"n_sessions": n, "far": far_all, "frr_strict": frr_strict, "frr_model": frr_model, "auc": auc, "eer": eer,
-           "per_kind": {k: {kk: vv for kk, vv in v.items()} for k, v in per_kind.items()},
+           "per_kind": per_kind,
            "per_group": per_group, "unseen": unseen, "synthetic": ds.synthetic,
            "confusion": {"human_accepted": H_acc, "human_not_accepted": H_rej,
                          "bot_accepted": B_acc, "bot_not_accepted": B_rej},

@@ -3,20 +3,11 @@ features.py
 Shared feature extractor for training and inference.
 Calculates 28 behavioral metrics covering timing variance, shape, and temporal drift.
 """
-import importlib
 import math
-import numpy as np
-from gamecore import replay, pair_strokes
 
-{
-    "python.analysis.extraPaths": [
-        "./backend",
-        "./gamecore",
-        "./frontend",
-        "./machine_learning",
-        "./admin_and_tests"
-    ]
-}
+import numpy as np
+
+from gamecore import replay, pair_strokes
 
 COARSE_STEP_MS = 15.0
 

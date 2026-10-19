@@ -2,10 +2,16 @@
 
 ## 1. Run program
 
+```bash
 pip install -r requirements.txt
-export GOTCHA_ADMIN_KEY="pick-something-long"      # only needed for labeled bot data
+playwright install chromium                         # only needed for the bots and e2e_collect.py
+export GOTCHA_ADMIN_KEY="pick-something-long"       # only needed for labeled bot data
 uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
-'--no-access-log' disables Uvicorn access logs. Tunnel providers may separately process connection metadata under their own privacy policies.
+```
+
+On Windows, `run_gotcha.bat` starts the server (set `GOTCHA_ADMIN_KEY` in your environment first if you will collect bot data).
+
+`--no-access-log` disables Uvicorn access logs. Tunnel providers may separately process connection metadata under their own privacy policies.
 
 The consent form is version `2026-10-v5`; it states that this course project has not received formal IRB or ethics-committee review and that the app is a research pilot, not a working security service. Confirm recruitment is permitted with your instructor or school before sharing the link. Participants open `http://127.0.0.1:8000/collect` on the server computer or use the HTTPS URL printed by the tunnel. Ways to reach it:
 - **In person (best for the low-vision participants):** run it on your laptop and let participants play on that machine. You can watch their setup and note problems.

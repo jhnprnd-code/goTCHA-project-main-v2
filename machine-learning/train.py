@@ -84,6 +84,6 @@ bundle = {
 }
 joblib.dump(bundle, args.out)
 card = {k: v for k, v in bundle.items() if k != "pipeline"}
-with open(args.out + ".card.json", "w") as f:
+with open(args.out + ".card.json", "w", encoding="utf-8") as f:
     json.dump(card, f, indent=2)
 print(f"\nsaved {args.out} (+ .card.json)" + ("   *** SYNTHETIC MODEL: pipeline test only ***" if ds.synthetic else ""))

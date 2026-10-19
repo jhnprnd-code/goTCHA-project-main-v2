@@ -12,13 +12,9 @@ import os
 import random
 import sys
 import time
-import requests
-from pathlib import Path
-from playwright.async_api import async_playwright
 
-BACKEND_DIR = Path(__file__).resolve().parent.parent / "backend"
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
+import requests
+from playwright.async_api import async_playwright
 
 from bot_lib import KINDS, build_events, gen_offsets, load_human_pool
 
@@ -113,7 +109,7 @@ async def main(args):
         finally:
             await browser.close()
             if args.intent_out:
-                with open(args.intent_out, "a") as f:
+                with open(args.intent_out, "a", encoding="utf-8") as f:
                     for row in INTENTS:
                         f.write(json.dumps(row) + "\n")
 

@@ -56,10 +56,8 @@ class GotchaModel {
         for (let i = 1; i < f.length; i++) d.push(f[i] - f[i - 1]);
         const s = [...d].sort((a, b) => a - b);
         const q = (p) => (s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : 0);
-        
-        // Canvas width is captured from the DOM by the View, passed in here if needed, 
-        // but I'm approximating this based on window for model isolation purposes, 
-        // or let the Controller attach it before submission.
+
+        // canvas_css_w is read from the DOM, so the Controller adds it before submitting.
         return {
             n_frames: f.length,
             dt_median_ms: r1(q(0.5)),
@@ -137,24 +135,24 @@ class GotchaView {
         c.append(this.canvas, this.overlay, this.live);
     }
 
-   showOverlay({ title, subtitle, titleColor = "#fff", lines = [], button = null, buttons = [], focus = false }) {
+    showOverlay({ title, subtitle, titleColor = "#fff", lines = [], button = null, buttons = [], focus = false }) {
         this.overlay.replaceChildren();
         this.overlay.style.display = "flex";
-        
+
         const t = this._el("div", "gotcha-title", title);
         t.style.color = titleColor;
         this.overlay.appendChild(t);
-        
+
         if (subtitle) {
             this.overlay.appendChild(this._el("div", "gotcha-subtitle", subtitle));
         }
-        
+
         lines.forEach((l) => this.overlay.appendChild(this._el("div", "gotcha-text", l)));
-        
-        // Combine old single button logic with new multi-button logic safely
-        let allButtons = [...buttons];
+
+        // `button` is the single-button shorthand; `buttons` takes several.
+        const allButtons = [...buttons];
         if (button) allButtons.push(button);
-        
+
         if (allButtons.length > 0) {
             const row = this._el("div", "gotcha-btn-row");
             allButtons.forEach((btn, i) => {
@@ -230,7 +228,7 @@ class GotchaView {
 
     clearCanvas() {
         this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, 800, 300);
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
 
@@ -251,10 +249,10 @@ class GotchaWidget {
         this._onVisibility = this._onVisibility.bind(this);
         this._frame = this._frame.bind(this);
 
-        this.__renderPrompt();
+        this._renderPrompt();
     }
 
-    __renderPrompt(focus = false) {
+    _renderPrompt(focus = false) {
         this.model.state = "PROMPT";
         this.view.clearCanvas();
         
@@ -284,7 +282,7 @@ class GotchaWidget {
 
     setPrompt(p) {
         Object.assign(this.model.promptOpts, p);
-        if (this.model.state === "PROMPT") this.__renderPrompt();
+        if (this.model.state === "PROMPT") this._renderPrompt();
     }
 
     _fail(message, title = "Verification not completed") {
@@ -317,7 +315,7 @@ class GotchaWidget {
             this.model.loadLevel(data);
             this.model.resetRun();
             this._beginGame();
-        } catch (e) {
+        } catch {
             this._fail("Could not reach the service. Please try again.");
         }
     }
@@ -472,7 +470,7 @@ class GotchaWidget {
             } else {
                 this._fail(data.detail || "That did not work. Please try again.");
             }
-        } catch (e) {
+        } catch {
             this._fail("Could not reach the service. Please try again.");
         }
     }

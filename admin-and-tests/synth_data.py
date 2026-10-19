@@ -16,7 +16,7 @@ import json
 import math
 import random
 
-from bot_lib import KINDS, build_events, fake_telemetry, gen_offsets
+from bot_lib import KINDS, build_events, fake_telemetry, gen_offsets, load_human_pool
 from gamecore import GAME, make_layout
 
 
@@ -80,13 +80,11 @@ def main():
                                lambda n: synth_human_offsets(n, rng, person)))
 
     # human pool for the data-driven attackers, built from the synthetic humans' levels
-    from bot_lib import load_human_pool
     tmp = a.out + ".pool.tmp"
-    with open(tmp, "w") as f:
+    with open(tmp, "w", encoding="utf-8") as f:
         for r in rows:
             f.write(json.dumps(r) + "\n")
     pool = load_human_pool([tmp])
-    import os
     os.remove(tmp)
 
     for kind in KINDS:
@@ -96,7 +94,7 @@ def main():
                 rows.append(record(rng, pid, "bot", kind, "sighted", lvl,
                                    lambda n: gen_offsets(kind, n, rng, pool)))
 
-    with open(a.out, "w") as f:
+    with open(a.out, "w", encoding="utf-8") as f:
         for r in rows:
             f.write(json.dumps(r, separators=(",", ":")) + "\n")
     print(f"wrote {len(rows)} synthetic records to {a.out} (NOT real data)")

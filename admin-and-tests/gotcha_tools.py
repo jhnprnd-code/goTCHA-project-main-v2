@@ -72,7 +72,7 @@ def run_merge(args):
                 if c.get("pid", "").strip().upper() not in withdrawn_pids:
                     consent_recs[c["pid"]] = c
                     kept_consent.append(c)
-            except ValueError:
+            except (ValueError, KeyError):
                 pass
                 
         if args.consent_out:
@@ -120,17 +120,20 @@ def run_calibrate(args):
     """Analyzes real human telemetry to report on frame-gate health."""
     recs = []
     for line in Path(args.sessions).read_text(encoding="utf-8").splitlines():
-         try: recs.append(json.loads(line))
-         except ValueError: pass
-         
+        try:
+            recs.append(json.loads(line))
+        except ValueError:
+            pass
+
     # Filter strictly to humans to avoid fake bot telemetry
-    rows = [r for r in recs if r.get("source") == "collect" 
-            and r.get("label") == "human" 
+    rows = [r for r in recs if r.get("source") == "collect"
+            and r.get("label") == "human"
             and r.get("telemetry")]
-            
+
     if not rows:
-        return print("No valid human telemetry found.")
-        
+        print("No valid human telemetry found.")
+        return
+
     gaps = sorted(r["telemetry"]["dt_max_ms"] for r in rows)
     fps = sorted(r["telemetry"]["n_frames"] / max(1.0, r["level_end_ms"] / 1000.0) for r in rows)
     over_50_ratio = sorted(r["telemetry"]["n_over_50"] / max(1, r["telemetry"]["n_frames"]) for r in rows)
@@ -143,10 +146,10 @@ def run_calibrate(args):
     print(f"Avg FPS: Median {statistics.median(fps):.1f}, 5th percentile {fps[int(len(fps)*0.05)]:.1f}")
     print(f"Ratio of frames > 50ms: Median {statistics.median(over_50_ratio):.3f}, 95th {over_50_ratio[int(len(over_50_ratio)*0.95)]:.3f}")
     
-    print("\nCurrent backend_api.py limits (for reference):")
-    print("  MAX_FRAME_GAP_MS = 250.0")
-    print("  MIN_AVG_FPS = 20.0")
-    print("  MAX_SLOW_FRAME_RATIO = 0.10")
+    print("\nDefault backend_api.py limits (env vars GOTCHA_MAX_FRAME_GAP_MS / GOTCHA_MIN_FPS / GOTCHA_MAX_SLOW_RATIO override):")
+    print("  MAX_FRAME_GAP_MS = 500.0")
+    print("  MIN_AVG_FPS = 10.0")
+    print("  MAX_SLOW_FRAME_RATIO = 0.30")
     print("\nOnly adjust these limits if ordinary participants are repeatedly being flagged for retries.")
 
 if __name__ == "__main__":
@@ -175,5 +178,7 @@ if __name__ == "__main__":
         if not args.admin_key:
             raise SystemExit("Set GOTCHA_ADMIN_KEY or pass --admin-key to label bot runs.")
         run_bots(args)
-    elif args.cmd == "merge": run_merge(args)
-    elif args.cmd == "calibrate": run_calibrate(args)
+    elif args.cmd == "merge":
+        run_merge(args)
+    elif args.cmd == "calibrate":
+        run_calibrate(args)
