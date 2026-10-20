@@ -45,7 +45,7 @@ export GOTCHA_ADMIN_KEY="pick-something-long"   # only needed to collect labeled
 uvicorn backend_api:app --app-dir backend --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-Open `http://127.0.0.1:8000/collect`. On Windows, `run_gotcha.bat` does the same. `build_exe.bat` builds a single-file `dist\goTCHA.exe` that starts the server, opens the page, and keeps `sessions.jsonl`, `consent.jsonl` and `model.joblib` next to the `.exe` (`GOTCHA_PORT` changes the port).
+Open `http://127.0.0.1:8000/collect`. On Windows, `run_gotcha.bat` does the same. `build_exe.bat` builds a single-file `dist\goTCHA.exe` that starts the server, opens the page, and keeps `sessions.jsonl`, `consent.jsonl` and `model.joblib` next to the `.exe` (`GOTCHA_PORT` changes the port). Set `GOTCHA_ADMIN_KEY` in the environment before starting either one if you will collect bot data.
 
 ### Configuration
 
@@ -54,7 +54,7 @@ Open `http://127.0.0.1:8000/collect`. On Windows, `run_gotcha.bat` does the same
 | `GOTCHA_SECRET` | Signs tokens | Random per start (tokens die on restart) |
 | `GOTCHA_SITE_SECRET` | Secret the host backend sends to `/siteverify` | `dev-site-secret` (demo only) |
 | `GOTCHA_ORIGINS` | Allowed CORS origins, comma-separated | `http://localhost:9000,http://127.0.0.1:9000` (the launcher sets its own port) |
-| `GOTCHA_ADMIN_KEY` | Allows bot-labeled data to be recorded | none (`run_gotcha.bat` and the launcher set a public default; see [Security notes](#security-notes)) |
+| `GOTCHA_ADMIN_KEY` | Allows bot-labeled data to be recorded | none: bot-labeled collection is disabled until you set it (see [Security notes](#security-notes)) |
 | `GOTCHA_DEBUG` | `1` leaks verdict reasons to the client | off |
 | `GOTCHA_DATA`, `GOTCHA_CONSENT` | Paths of `sessions.jsonl` and `consent.jsonl` | next to the backend (or the `.exe`) |
 | `GOTCHA_MODEL`, `GOTCHA_THRESHOLD` | Model path; override the model's decision threshold | `backend/model.joblib`; the model's own |
@@ -145,7 +145,7 @@ Restart the server after training. To roll back, delete `backend/model.joblib` a
 ## Security notes
 
 - **Not a security product.** Sample attackers get through, so it must not guard anything that matters.
-- **The default admin key is public.** `run_gotcha.bat` and `gotcha_launcher.py` set a default `GOTCHA_ADMIN_KEY` that is committed to this repository. Set your own before exposing the server through a tunnel, or anyone can submit bot-labeled rows to your dataset.
+- **There is no default admin key.** Bot-labeled collection is disabled until you set `GOTCHA_ADMIN_KEY`, and `run_gotcha.bat` and the launcher print a notice when it is unset. An earlier default was committed to this repository and stays in git history, so never reuse it: pick a new long random value. Anyone who has the key can submit bot-labeled rows to your dataset.
 - Use real `GOTCHA_SECRET` and `GOTCHA_SITE_SECRET` values outside a demo, and leave `GOTCHA_DEBUG` off.
 - Telemetry comes from the browser, so it is evidence for calibration, not proof. "Human" labels are self-attested by whoever opens the study link, so share it only with people you recruit.
 - Do not enable `GOTCHA_ALLOW_SYNTHETIC_MODEL` for real participants.

@@ -17,9 +17,9 @@ from pathlib import Path
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("GOTCHA_PORT", "8000"))
 
-# Same default as run_gotcha.bat; an already-set GOTCHA_ADMIN_KEY wins. Must be set before
-# backend_api is imported, because it reads the environment at import time.
-os.environ.setdefault("GOTCHA_ADMIN_KEY", "120522")
+# There is deliberately no default GOTCHA_ADMIN_KEY: bot-labeled data collection stays disabled
+# unless you set one in the environment. Defaults must be set before backend_api is imported,
+# because it reads the environment at import time.
 os.environ.setdefault("GOTCHA_ORIGINS", f"http://localhost:{PORT},http://127.0.0.1:{PORT}")
 
 if not getattr(sys, "frozen", False):   # running from source: backend/ is not on the path yet
@@ -41,6 +41,8 @@ def main() -> None:
     from backend_api import app
 
     print(f"goTCHA server: http://{HOST}:{PORT}/collect   (close this window or press Ctrl+C to stop)")
+    if not os.environ.get("GOTCHA_ADMIN_KEY"):
+        print("GOTCHA_ADMIN_KEY is not set: bot-labeled data collection is disabled (human collection is unaffected).")
     threading.Thread(target=_open_browser_when_up, daemon=True).start()
     uvicorn.run(app, host=HOST, port=PORT, access_log=False)
 
