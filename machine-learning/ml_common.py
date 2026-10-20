@@ -130,6 +130,29 @@ def choose_threshold(human_scores: np.ndarray, target_frr: float) -> float:
     return float(np.quantile(human_scores, target_frr))
 
 
+def logo_scores(X: np.ndarray, y: np.ndarray, pid: np.ndarray, scorable: np.ndarray, train_ok: np.ndarray,
+                C: float, target_frr: float, nested: bool = True) -> Tuple[np.ndarray, np.ndarray]:
+    """Leave-one-participant-out P(human) for all scorable sessions, plus the per-session
+    threshold chosen inside that session's training fold (NaN when nested=False).
+    Shared by evaluate.py and permutation_test.py so both run the identical protocol."""
+    n = len(y)
+    score = np.full(n, np.nan)
+    thr = np.full(n, np.nan)
+    for p in sorted(set(pid[scorable])):
+        te = scorable & (pid == p)
+        tr = train_ok & (pid != p)
+        if len(set(y[tr])) < 2:
+            continue
+        model = make_pipeline(C).fit(X[tr], y[tr])
+        score[te] = model.predict_proba(X[te])[:, 1]
+        if nested:
+            inner = oof_scores(X[tr], y[tr], pid[tr], C)
+            ok = ~np.isnan(inner) & (y[tr] == 1)
+            if ok.sum() >= 2:
+                thr[te] = choose_threshold(inner[ok], target_frr)
+    return score, thr
+
+
 # ------------------------------------------------------------- replay defense
 def err_vector(rec: dict) -> List[Optional[float]]:
     strokes = pair_strokes([(e["k"], float(e["t"])) for e in rec["events"]])
