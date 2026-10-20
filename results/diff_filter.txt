@@ -27,4 +27,4 @@ ADDED (in training file, not in raw): 80
   timed human sessions per participant code (the ones that matter for FRR):
     none
 
-Verdict: The training file is a SUPERSET of the raw file. It has records the raw file lacks, so it is not a filtered subset. Find where the added records came from.
+Verdict: The training file is a SUPERSET of the raw file. It has records the raw file lacks, so it is not a filtered subset. 

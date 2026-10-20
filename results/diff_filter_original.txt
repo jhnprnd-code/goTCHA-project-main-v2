@@ -17,4 +17,4 @@ ADDED (in training file, not in raw): 0
   timed human sessions per participant code (the ones that matter for FRR):
     none
 
-Verdict: Same sessions in both files: nothing was dropped and nothing was added.
+Verdict: Same sessions in both files, nothing was dropped and nothing was added.
