@@ -9,7 +9,7 @@ A game-based CAPTCHA that judges human vs. bot from SPACE-bar timing, plus the c
 | Part | Status |
 |---|---|
 | Game widget and challenge/verify API | Working. Challenge, verify and siteverify endpoints, signed tokens, rate limits, a frame-quality check. |
-| Timing study (data collection) | Finished: 9 people (4 low vision, 4 typical vision, 1 prefer not to say), 27 timed sessions. Deletion-request deadline: 2026-10-21. |
+| Timing study (data collection) | Finished and closed: 9 people completed (4 low vision, 4 typical vision, 1 prefer not to say), 27 timed sessions. The deletion-request window closed on 2026-10-21 and no further participants will take part. |
 | Training and evaluation pipeline | Working end to end. |
 | Detector | Pilot only. It rejected no human in the study, but accepted 85% of bot sessions when used alone. Not validated. |
 
@@ -63,7 +63,7 @@ Open `http://127.0.0.1:8000/collect`. On Windows, `run_gotcha.bat` does the same
 
 ## Timing Study
 
-Each participant: consent, 3 setup questions, one practice level, three timed levels, then an anonymous participant code. About 5 minutes. The app stores no names, emails or IP addresses. Participants must be 18 or older (the page enforces a checkbox, not verification). The consent form (version `2026-10-v5`) states that the project has had no formal IRB or ethics-committee review and that the app is a research pilot. Confirm with your instructor or school that recruitment is permitted before sharing a link.
+Each participant: consent, 3 setup questions, one practice level, three timed levels, then an anonymous participant code. About 5 minutes. The app stores no names, emails or IP addresses. The browser user-agent is reduced to browser name, major version and mobile / in-app flags before it is stored; records written before that change contain the full string. Participants must be 18 or older (the page enforces a checkbox, not verification). The consent form (version `2026-10-v5`) states that the project has had no formal IRB or ethics-committee review and that the app is a research pilot. Confirm with your instructor or school that recruitment is permitted before sharing a link.
 
 Full procedure (recruiting, quotas, tunnels, monitoring, withdrawals): [COLLECTION.md](COLLECTION.md).
 
@@ -140,7 +140,7 @@ python machine-learning/train.py --data backend/sessions_model_training.jsonl --
 python -c "import sys; sys.path.insert(0,'backend'); from model_runtime import load_model; from pathlib import Path; rt=load_model(Path('backend/model.joblib')); print(rt.describe() if rt else 'NOT LOADED')"
 ```
 
-Restart the server after training. To roll back, delete `backend/model.joblib` and restart. Retrain after the withdrawal deadline and after any withdrawal, because the model contains every participant's data. The pilot model is not validated; expect the results above, not a working CAPTCHA.
+Restart the server after training. To roll back, delete `backend/model.joblib` and restart. Retrain after any change to the data (for example a late deletion request), because the model contains every participant's data; with unchanged data, training reproduces the same threshold and AUC. The pilot model is not validated; expect the results above, not a working CAPTCHA.
 
 ## Security notes
 
@@ -164,4 +164,4 @@ Also: `gotcha_launcher.py`, `run_gotcha.bat`, `build_exe.bat`, `COLLECTION.md`, 
 
 ## Tests
 
-`python admin-and-tests/e2e_collect.py` replays the whole collection flow in headless Chromium (about 2 minutes) on port 8100 with temporary files, so it never touches your real data. Run it after any change. `admin-and-tests/synth_data.py` generates synthetic sessions for pipeline tests only: anything computed from them is circular and must not be reported as a result.
+`python admin-and-tests/e2e_collect.py` replays the whole collection flow in headless Chromium (about 2 minutes) on port 8100 with temporary files, so it never touches your real data. Run it after any change. `python admin-and-tests/test_coarse_ua.py` checks that the stored user-agent keeps only the browser name and version (no device model). `admin-and-tests/synth_data.py` generates synthetic sessions for pipeline tests only: anything computed from them is circular and must not be reported as a result.
