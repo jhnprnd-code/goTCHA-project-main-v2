@@ -1,0 +1,4 @@
+0 raw lines are not in the training file
+
+
+Dropped TIMED human sessions per participant code (the ones that matter for FRR):
