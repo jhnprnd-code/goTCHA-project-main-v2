@@ -1,4 +1,30 @@
-0 raw lines are not in the training file
+raw: C:\Users\USER\Desktop\goTCHA-project-main-v2\backend\sessions.jsonl
+  37 lines = 37 records + 0 blank + 0 unparseable
+  37 distinct (pid, level_idx, ts) keys (0 duplicate)
+training: C:\Users\USER\Desktop\goTCHA-project-main-v2\backend\sessions_model_training.jsonl
+  117 lines = 117 records + 0 blank + 0 unparseable
+  117 distinct (pid, level_idx, ts) keys (0 duplicate)
 
+In both files: 37 distinct keys
 
-Dropped TIMED human sessions per participant code (the ones that matter for FRR):
+DROPPED (in raw, not in training file): 0
+  0 records, 0 of them usable by evaluate.py
+  timed human sessions per participant code (the ones that matter for FRR):
+    none
+
+ADDED (in training file, not in raw): 80
+  80 records, 60 of them usable by evaluate.py
+    12  bot pw_perfect | TIMED | valid
+    12  bot pw_gauss | TIMED | valid
+    12  bot pw_fitted | TIMED | valid
+    12  bot pw_adaptive | TIMED | valid
+    12  bot pw_replay | TIMED | valid
+     4  bot pw_perfect | practice | valid
+     4  bot pw_gauss | practice | valid
+     4  bot pw_fitted | practice | valid
+     4  bot pw_adaptive | practice | valid
+     4  bot pw_replay | practice | valid
+  timed human sessions per participant code (the ones that matter for FRR):
+    none
+
+Verdict: The training file is a SUPERSET of the raw file. It has records the raw file lacks, so it is not a filtered subset. Find where the added records came from.
