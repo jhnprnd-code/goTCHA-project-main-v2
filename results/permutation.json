@@ -1,0 +1,69 @@
+{
+  "data": [
+    "backend\\sessions_model_training.jsonl"
+  ],
+  "perms": 1000,
+  "seed": 0,
+  "features": "default",
+  "n_sessions": 87,
+  "n_people": 29,
+  "synthetic": false,
+  "observed": {
+    "auc": 0.7203703703703703,
+    "bal_err": 0.3,
+    "bal_err_model": 0.425,
+    "h_rejected": 0,
+    "far": 0.6,
+    "far_model": 0.85
+  },
+  "stats": {
+    "auc": {
+      "observed": 0.7203703703703703,
+      "null_mean": 0.47308703703703703,
+      "null_lo": 0.23947530864197525,
+      "null_hi": 0.7050462962962963,
+      "p": 0.017982017982017984,
+      "role": "primary"
+    },
+    "bal_err": {
+      "observed": 0.3,
+      "null_mean": 0.4993537037037037,
+      "null_lo": 0.3582638888888889,
+      "null_hi": 0.6556018518518518,
+      "p": 0.002997002997002997,
+      "role": "primary"
+    },
+    "bal_err_model": {
+      "observed": 0.425,
+      "null_mean": 0.5023305555555555,
+      "null_lo": 0.3768518518518519,
+      "null_hi": 0.5740740740740741,
+      "p": 0.07892107892107893,
+      "role": "primary"
+    },
+    "h_rejected": {
+      "observed": 0,
+      "null_mean": 6.581,
+      "null_lo": 2.0,
+      "null_hi": 13.0,
+      "p": 0.004995004995004995,
+      "role": "context"
+    },
+    "far": {
+      "observed": 0.6,
+      "null_mean": 0.7549666666666667,
+      "null_lo": 0.5666666666666667,
+      "null_hi": 0.8666666666666667,
+      "p": 0.04595404595404595,
+      "role": "context"
+    },
+    "far_model": {
+      "observed": 0.85,
+      "null_mean": 0.93355,
+      "null_lo": 0.6833333333333333,
+      "null_hi": 1.0,
+      "p": 0.16783216783216784,
+      "role": "context"
+    }
+  }
+}
