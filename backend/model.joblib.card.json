@@ -21,21 +21,21 @@
     "err_dwell_corr"
   ],
   "feature_set": "default",
-  "threshold": 0.40171148997277295,
+  "threshold": 0.1404271875753017,
   "target_frr": 0.05,
   "C": 0.3,
   "min_attempts": 5,
   "coarse_step_ms": 15.0,
-  "synthetic": true,
-  "trained_at": "2026-10-15 14:17:35",
-  "n_human_sessions": 45,
-  "n_human_pids": 15,
-  "n_bot_sessions": 72,
+  "synthetic": false,
+  "trained_at": "2026-10-20 16:39:29",
+  "n_human_sessions": 27,
+  "n_human_pids": 9,
+  "n_bot_sessions": 48,
   "bot_kinds": {
-    "perfect": 18,
-    "gauss": 18,
-    "fitted": 18,
-    "adaptive": 18
+    "pw_perfect": 12,
+    "pw_gauss": 12,
+    "pw_fitted": 12,
+    "pw_adaptive": 12
   },
-  "oof_auc": 0.8435185185185186
+  "oof_auc": 0.7229938271604939
 }
