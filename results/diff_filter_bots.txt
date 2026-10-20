@@ -1,0 +1,14 @@
+80 raw lines are not in the training file
+
+  12  bot pw_perfect | TIMED | valid
+  12  bot pw_gauss | TIMED | valid
+  12  bot pw_fitted | TIMED | valid
+  12  bot pw_adaptive | TIMED | valid
+  12  bot pw_replay | TIMED | valid
+   4  bot pw_perfect | practice | valid
+   4  bot pw_gauss | practice | valid
+   4  bot pw_fitted | practice | valid
+   4  bot pw_adaptive | practice | valid
+   4  bot pw_replay | practice | valid
+
+Dropped TIMED human sessions per participant code (the ones that matter for FRR):
