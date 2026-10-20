@@ -61,7 +61,7 @@ Open `http://127.0.0.1:8000/collect`. On Windows, `run_gotcha.bat` does the same
 | `GOTCHA_ALLOW_SYNTHETIC_MODEL` | `1` lets a synthetic model load. Pipeline tests only. | off |
 | `GOTCHA_MAX_FRAME_GAP_MS`, `GOTCHA_MAX_SLOW_RATIO`, `GOTCHA_MIN_FPS` | Frame-quality gate (uncalibrated) | 500, 0.30, 10 |
 
-## The timing study
+## Timing Study
 
 Each participant: consent, 3 setup questions, one practice level, three timed levels, then an anonymous participant code. About 5 minutes. The app stores no names, emails or IP addresses. Participants must be 18 or older (the page enforces a checkbox, not verification). The consent form (version `2026-10-v5`) states that the project has had no formal IRB or ethics-committee review and that the app is a research pilot. Confirm with your instructor or school that recruitment is permitted before sharing a link.
 
@@ -74,7 +74,7 @@ Full procedure (recruiting, quotas, tunnels, monitoring, withdrawals): [COLLECTI
 
 Both are gitignored. Back them up and never commit them. To withdraw a participant, stop the server and run `python admin-and-tests/delete_participant.py <CODE>`.
 
-## The detector and its evaluation
+## Detector and its Evaluation
 
 **Model.** 18 timing features (spread, shape and drift of timing error and key-hold time; 28 are extracted, the default set uses 18) feed an L2 logistic regression with balanced classes. The decision threshold is the 5% quantile of participant-grouped out-of-fold human scores. The near-duplicate rule flags a session whose per-obstacle timing errors all agree within 15 ms (at least 5 obstacles) with an earlier session. "Replay" bots copy human sequences, so they are held out of training and only test the duplicate rule.
 
