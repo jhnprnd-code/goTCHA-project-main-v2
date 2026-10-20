@@ -25,6 +25,7 @@ import json
 import logging
 import math
 import os
+import re
 import secrets
 import statistics
 import sys
@@ -331,6 +332,43 @@ def _append(path: Path, rec: dict) -> None:
         log.warning("could not write %s: %s", path.name, exc)
 
 
+# The study page promises "browser name and version", so the full user-agent string (which on a phone
+# can include the device model) is reduced before anything is written to disk.
+_UA_BROWSERS = (    # order matters: Edge, Opera and Chrome-on-iOS also contain "Chrome" or "Safari"
+    ("Edge", re.compile(r"Edg(?:e|A|iOS)?/(\d+)")),
+    ("Opera", re.compile(r"(?:OPR|OPiOS)/(\d+)")),
+    ("Firefox", re.compile(r"(?:Firefox|FxiOS)/(\d+)")),
+    ("Chrome", re.compile(r"(?:Chrome|CriOS)/(\d+)")),
+    ("Safari", re.compile(r"Version/(\d+)[^ ]* (?:Mobile/\S+ )?Safari/")),
+)
+_UA_IN_APP = re.compile(r"; wv\)|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|Snapchat|TikTok|musical_ly|Line/")
+_UA_MOBILE = re.compile(r"Mobile|Android|iPhone|iPad")
+
+
+def coarse_ua(ua: str) -> str:
+    """'Chrome 126, mobile, in-app' instead of the raw user-agent. Unknown agents become 'Other'."""
+    if not ua:
+        return ""
+    for name, pattern in _UA_BROWSERS:
+        m = pattern.search(ua)
+        if m:
+            parts = [f"{name} {m.group(1)}"]
+            if _UA_MOBILE.search(ua):
+                parts.append("mobile")
+            if _UA_IN_APP.search(ua):
+                parts.append("in-app")
+            return ", ".join(parts)
+    return "Other"
+
+
+def _record_telemetry(tele: Optional[Telemetry]) -> Optional[dict]:
+    if not tele:
+        return None
+    d = _dump(tele)
+    d["ua"] = coarse_ua(d.get("ua", ""))
+    return d
+
+
 def _session_record(source: str, ch: Challenge, events: List[Event], tele: Optional[Telemetry],
                     elapsed_ms: float, **extra) -> dict:
     return {
@@ -338,7 +376,7 @@ def _session_record(source: str, ch: Challenge, events: List[Event], tele: Optio
         "spawns_ms": ch.spawns_ms, "level_end_ms": ch.level_end_ms, "params": GAME,
         "elapsed_ms": round(elapsed_ms),
         "events": [{"k": e.k, "t": e.t} for e in events],
-        "telemetry": _dump(tele) if tele else None,
+        "telemetry": _record_telemetry(tele),
         **extra,
     }
 

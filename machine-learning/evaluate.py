@@ -175,6 +175,12 @@ for k in kinds:
     a, _ = auc_eer(sc, ds.scorable & (human | m))
     unseen[k] = {"far": cluster_rate(acc, m), "auc": a}
 
+# What the learned model does without the duplicate rule. Computed last on purpose: cluster_rate draws
+# from the shared bootstrap RNG, so placing it earlier would shift every interval above it.
+far_model_all = cluster_rate(model_accept, bots)
+dup_only = int((bots & model_accept & ~accepted).sum())    # bots the model alone would accept but the duplicate rule rejects
+bot_rejected = int((bots & ~accepted).sum())
+
 # ------------------------------------------------------------------ ablations
 print("feature-set ablation...", flush=True)
 feat_abl = {}
@@ -289,6 +295,9 @@ L.append(f"- **FRR (strict, includes inconclusive):** {pct(frr_strict)}")
 L.append(f"- FRR (model only, scorable sessions): {pct(frr_model)}")
 L.append(f"- **FAR (all bot sessions):** {pct(far_all)}")
 L.append(f"- FAR excluding test-only attackers: {pct(far_trainkinds)}")
+L.append(f"- **FAR (learned model alone, no duplicate rule):** {pct(far_model_all)}")
+L.append(f"- Duplicate rule: {dup_only} of {bot_rejected} bot rejections are sessions the model alone would have accepted"
+         if bot_rejected else "- Duplicate rule: no bot sessions were rejected")
 L.append(f"- AUC {auc:.3f}, EER {eer:.1%} (optimistic: EER picks its threshold on test scores)")
 L.append(f"- Human passes within 3 attempts: {passes}/{n_h} people ({passes / max(n_h, 1):.0%}, "
          f"95% Wilson CI [{p3_lo:.0%}, {p3_hi:.0%}])")
@@ -344,7 +353,8 @@ metrics = {"n_sessions": n, "far": far_all, "frr_strict": frr_strict, "frr_model
            "per_group": per_group, "unseen": unseen, "synthetic": ds.synthetic,
            "confusion": {"human_accepted": H_acc, "human_not_accepted": H_rej,
                          "bot_accepted": B_acc, "bot_not_accepted": B_rej},
-           "pass_within_3": {"passes": passes, "people": n_h}}
+           "pass_within_3": {"passes": passes, "people": n_h},
+           "far_model": far_model_all, "dup_rule": {"only_by_dup": dup_only, "bot_rejections": bot_rejected}}
 (out / "metrics.json").write_text(json.dumps(metrics, indent=2, default=str), encoding="utf-8")
 print(f"\ndone in {time.time() - t0:.0f}s -> {out}/report.md")
-print("\n".join(L[3:16]))
+print("\n".join(L[3:18]))
