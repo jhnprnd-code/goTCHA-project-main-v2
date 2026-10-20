@@ -10,3 +10,5 @@ __pycache__/
 # PyInstaller output (see build_exe.bat)
 build/
 dist/
+# Model backups (pickle files: never commit; see README "Model status and deployment")
+*.bak
