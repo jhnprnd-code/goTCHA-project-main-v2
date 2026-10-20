@@ -10,6 +10,8 @@ Protocol
     that never saw them. Humans' sessions are correlated, so CIs resample PEOPLE, not sessions.
   * Decision threshold is chosen INSIDE each training fold (inner grouped CV), never on test
     scores, so the reported FAR/FRR are not tuned on the data they describe.
+  * A rate of exactly 0% or 100% leaves the participant bootstrap nothing to resample (its CI
+    collapses to a point), so those rates get a Wilson interval over participants, marked with a trailing *.
   * Unscorable sessions (too few attempts, or timer too coarse to judge) are not accepted:
     for humans that is an 'inconclusive, try again' (counted in the strict FRR), for bots a
     rejection.
@@ -38,8 +40,8 @@ from sklearn.svm import SVC
 
 from features import COARSE_STEP_MS, FEATURES, estimate_step, extract
 from gamecore import pair_strokes
-from ml_common import (FEATURE_SETS, MIN_ATTEMPTS, TEST_ONLY_KINDS, Dataset, choose_threshold, dup_flags,
-                       load_records, make_pipeline, oof_scores)
+from ml_common import FEATURE_SETS, MIN_ATTEMPTS, TEST_ONLY_KINDS, Dataset, dup_flags, load_records
+from ml_common import logo_scores as _logo_scores
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--data", nargs="+", default=["sessions.jsonl"])
@@ -73,22 +75,8 @@ dup = dup_flags(recs)
 def logo_scores(Xm, train_ok, nested=True, exclude_kind=None):
     """Leave-one-participant-out P(human) for all scorable sessions, plus the per-session
     threshold chosen inside that session's training fold."""
-    score = np.full(n, np.nan)
-    thr = np.full(n, np.nan)
     allowed = train_ok & (ds.kind != exclude_kind) if exclude_kind else train_ok
-    for pid in sorted(set(ds.pid[ds.scorable])):
-        te = ds.scorable & (ds.pid == pid)
-        tr = allowed & (ds.pid != pid)
-        if len(set(ds.y[tr])) < 2:
-            continue
-        model = make_pipeline(args.C).fit(Xm[tr], ds.y[tr])
-        score[te] = model.predict_proba(Xm[te])[:, 1]
-        if nested:
-            inner = oof_scores(Xm[tr], ds.y[tr], ds.pid[tr], args.C)
-            ok = ~np.isnan(inner) & (ds.y[tr] == 1)
-            if ok.sum() >= 2:
-                thr[te] = choose_threshold(inner[ok], args.target_frr)
-    return score, thr
+    return _logo_scores(Xm, ds.y, ds.pid, ds.scorable, allowed, args.C, args.target_frr, nested)
 
 
 def auc_eer(score, mask):
@@ -111,8 +99,12 @@ def cluster_rate(bad, mask, boot=args.boot):
     idx = rng.integers(0, len(pids), (boot, len(pids)))
     r = num[idx].sum(1) / np.maximum(den[idx].sum(1), 1)
     lo, hi = np.percentile(r, [2.5, 97.5])
+    method = "bootstrap"
+    if num.sum() in (0, den.sum()):      # nobody (or everybody) is bad: every resample gives the same rate
+        lo, hi = wilson(int(num.sum() > 0) * len(pids), len(pids))
+        method = "wilson"
     return {"rate": float(num.sum() / den.sum()), "lo": float(lo), "hi": float(hi),
-            "n": int(den.sum()), "pids": len(pids)}
+            "n": int(den.sum()), "pids": len(pids), "ci": method}
 
 
 def wilson(k, m, z=1.96):
@@ -122,11 +114,13 @@ def wilson(k, m, z=1.96):
     d = 1 + z * z / m
     c = (p + z * z / (2 * m)) / d
     h = z * math.sqrt(p * (1 - p) / m + z * z / (4 * m * m)) / d
-    return c - h, c + h
+    return max(0.0, c - h), min(1.0, c + h)
 
 
 def pct(r):
-    return "n/a" if r["n"] == 0 else f"{r['rate']:.1%} [{r['lo']:.1%}, {r['hi']:.1%}]"
+    if r["n"] == 0:
+        return "n/a"
+    return f"{r['rate']:.1%} [{r['lo']:.1%}, {r['hi']:.1%}]" + ("*" if r.get("ci") == "wilson" else "")
 
 
 # ------------------------------------------------------------ main protocol
@@ -298,7 +292,8 @@ L.append(f"- FAR excluding test-only attackers: {pct(far_trainkinds)}")
 L.append(f"- AUC {auc:.3f}, EER {eer:.1%} (optimistic: EER picks its threshold on test scores)")
 L.append(f"- Human passes within 3 attempts: {passes}/{n_h} people ({passes / max(n_h, 1):.0%}, "
          f"95% Wilson CI [{p3_lo:.0%}, {p3_hi:.0%}])")
-L.append("\nCIs resample participants, not sessions. Humans contribute 3 correlated sessions each.\n")
+L.append("\nCIs resample participants, not sessions. Humans contribute 3 correlated sessions each. "
+         "A trailing * marks a rate of exactly 0% or 100%: nothing to resample, so a Wilson interval over participants is shown.\n")
 
 L.append("## FAR by attacker\n")
 L.append("| attacker | sessions | unscorable | FAR (model + dup rule) | FAR (model only) | AUC vs humans | note |\n|---|---|---|---|---|---|---|")
