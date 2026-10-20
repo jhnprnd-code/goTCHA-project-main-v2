@@ -1,0 +1,20 @@
+raw: backend\sessions_backup.jsonl
+  117 lines = 117 records + 0 blank + 0 unparseable
+  117 distinct (pid, level_idx, ts) keys (0 duplicate)
+training: backend\sessions_model_training.jsonl
+  117 lines = 117 records + 0 blank + 0 unparseable
+  117 distinct (pid, level_idx, ts) keys (0 duplicate)
+
+In both files: 117 distinct keys
+
+DROPPED (in raw, not in training file): 0
+  0 records, 0 of them usable by evaluate.py
+  timed human sessions per participant code (the ones that matter for FRR):
+    none
+
+ADDED (in training file, not in raw): 0
+  0 records, 0 of them usable by evaluate.py
+  timed human sessions per participant code (the ones that matter for FRR):
+    none
+
+Verdict: Same sessions in both files: nothing was dropped and nothing was added.

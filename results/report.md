@@ -1,6 +1,6 @@
 # goTCHA evaluation
 
-Generated 2026-10-17 12:59 from C:\Users\USER\Desktop\Python\pythoncore-3.14-64\goTCHA-project-main-v2\backend\sessions_model_training.jsonl.
+Generated 2026-10-20 12:26 from backend\sessions_model_training.jsonl.
 
 ## Dataset
 
@@ -13,18 +13,18 @@ Generated 2026-10-17 12:59 from C:\Users\USER\Desktop\Python\pythoncore-3.14-64\
 ## Headline (deployed system = model + near-duplicate rule)
 
 | | accepted | not accepted |
-| --- | --- | --- |
+|---|---|---|
 | human sessions | 27 | 0 |
 | bot sessions | 36 | 24 |
 
-- **FRR (strict, includes inconclusive):** 0.0% [0.0%, 0.0%]
-- FRR (model only, scorable sessions): 0.0% [0.0%, 0.0%]
+- **FRR (strict, includes inconclusive):** 0.0% [0.0%, 29.9%]*
+- FRR (model only, scorable sessions): 0.0% [0.0%, 29.9%]*
 - **FAR (all bot sessions):** 60.0% [41.7%, 78.3%]
 - FAR excluding test-only attackers: 62.5% [43.8%, 81.2%]
 - AUC 0.720, EER 36.0% (optimistic: EER picks its threshold on test scores)
 - Human passes within 3 attempts: 9/9 people (100%, 95% Wilson CI [70%, 100%])
 
-CIs resample participants, not sessions. Humans contribute 3 correlated sessions each.
+CIs resample participants, not sessions. Humans contribute 3 correlated sessions each. A trailing * marks a rate of exactly 0% or 100%: nothing to resample, so a Wilson interval over participants is shown.
 
 ## FAR by attacker
 
@@ -34,22 +34,22 @@ CIs resample participants, not sessions. Humans contribute 3 correlated sessions
 | pw_fitted | 12 | 0 | 91.7% [75.0%, 100.0%] | 91.7% [75.0%, 100.0%] | 0.65 |  |
 | pw_gauss | 12 | 0 | 75.0% [50.0%, 100.0%] | 75.0% [50.0%, 100.0%] | 0.73 |  |
 | pw_perfect | 12 | 0 | 8.3% [0.0%, 25.0%] | 83.3% [66.7%, 100.0%] | 0.78 |  |
-| pw_replay | 12 | 0 | 50.0% [16.7%, 83.3%] | 100.0% [100.0%, 100.0%] | 0.60 | test-only (copies humans; never trained on) |
+| pw_replay | 12 | 0 | 50.0% [16.7%, 83.3%] | 100.0% [51.0%, 100.0%]* | 0.60 | test-only (copies humans; never trained on) |
 
 ## FRR by human group
 
 | group | sessions | people | strict FRR |
 |---|---|---|---|
-| low_vision | 12 | 4 | 0.0% [0.0%, 0.0%]  (fewer than 5 people: treat as a pilot) |
-| prefer_not_to_say | 3 | 1 | 0.0% [0.0%, 0.0%]  (fewer than 5 people: treat as a pilot) |
-| sighted | 12 | 4 | 0.0% [0.0%, 0.0%]  (fewer than 5 people: treat as a pilot) |
+| low_vision | 12 | 4 | 0.0% [0.0%, 49.0%]*  (fewer than 5 people: treat as a pilot) |
+| prefer_not_to_say | 3 | 1 | 0.0% [0.0%, 79.3%]*  (fewer than 5 people: treat as a pilot) |
+| sighted | 12 | 4 | 0.0% [0.0%, 49.0%]*  (fewer than 5 people: treat as a pilot) |
 
 ## Unseen attackers (retrained without that attacker)
 
 | attacker held out | FAR | AUC vs humans |
 |---|---|---|
 | pw_adaptive | 83.3% [50.0%, 100.0%] | 0.75 |
-| pw_fitted | 100.0% [100.0%, 100.0%] | 0.35 |
+| pw_fitted | 100.0% [51.0%, 100.0%]* | 0.35 |
 | pw_gauss | 83.3% [66.7%, 100.0%] | 0.70 |
 | pw_perfect | 8.3% [0.0%, 25.0%] | 0.22 |
 
