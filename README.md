@@ -144,7 +144,7 @@ Restart the server after training. To roll back, delete `backend/model.joblib` a
 
 ## Security notes
 
-- **Not a security product.** Sample attackers get through, so it must not guard anything that matters.
+- **Not a security product.** Sample attackers get through, so it must not guard anything that is a sophisticated deployed product.
 - **There is no default admin key.** Bot-labeled collection is disabled until you set `GOTCHA_ADMIN_KEY`, and `run_gotcha.bat` and the launcher print a notice when it is unset. An earlier default was committed to this repository and stays in git history, so never reuse it: pick a new long random value. Anyone who has the key can submit bot-labeled rows to your dataset.
 - Use real `GOTCHA_SECRET` and `GOTCHA_SITE_SECRET` values outside a demo, and leave `GOTCHA_DEBUG` off.
 - Telemetry comes from the browser, so it is evidence for calibration, not proof. "Human" labels are self-attested by whoever opens the study link, so share it only with people you recruit.
