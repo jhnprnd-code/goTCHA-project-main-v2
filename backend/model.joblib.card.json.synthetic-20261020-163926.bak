@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "features": [
+    "err_std",
+    "err_mad",
+    "err_iqr",
+    "err_range",
+    "near_perfect_frac",
+    "dwell_std",
+    "dwell_cv",
+    "err_skew",
+    "err_bowley",
+    "dwell_skew",
+    "err_slope",
+    "absdev_slope",
+    "half_mean_shift",
+    "half_logvar_ratio",
+    "err_lag1",
+    "diff_ratio",
+    "dwell_slope",
+    "err_dwell_corr"
+  ],
+  "feature_set": "default",
+  "threshold": 0.40171148997277295,
+  "target_frr": 0.05,
+  "C": 0.3,
+  "min_attempts": 5,
+  "coarse_step_ms": 15.0,
+  "synthetic": true,
+  "trained_at": "2026-10-15 14:17:35",
+  "n_human_sessions": 45,
+  "n_human_pids": 15,
+  "n_bot_sessions": 72,
+  "bot_kinds": {
+    "perfect": 18,
+    "gauss": 18,
+    "fitted": 18,
+    "adaptive": 18
+  },
+  "oof_auc": 0.8435185185185186
+}
