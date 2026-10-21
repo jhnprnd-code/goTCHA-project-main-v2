@@ -16,7 +16,7 @@ In a terminal the command is `git commit -m "Add the freeze tool"`, and the log 
 git config core.hooksPath .githooks
 ```
 
-The hook in `.githooks/commit-msg` rejects a message whose first line starts with `git`, which is what a command pasted into a commit box looks like. It works in a terminal and in VS Code's Source Control box; if you use a different Git client, try a bad message once to confirm it is checked. Git for Windows runs the hook with its bundled `sh`, so nothing else needs installing. To skip the check once: `git commit --no-verify`.
+The hook in `.githooks/commit-msg` rejects a message whose first line starts with `git` (a command pasted into a commit box) or starts like `git status` output (`modified:`, `new file:`, `deleted:`, `On branch`, and similar). It works in a terminal and in VS Code's Source Control box; if you use a different Git client, try a bad message once to confirm it is checked. Git for Windows runs the hook with its bundled `sh`, so nothing else needs installing. To skip the check once: `git commit --no-verify`.
 
 The check is local. Edits made on github.com and clones that have not run the command above are not covered.
 
