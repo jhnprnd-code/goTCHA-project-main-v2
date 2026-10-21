@@ -4,6 +4,7 @@ Freeze the raw study files before anything is merged, filtered or split, and che
     python admin-and-tests/freeze_data.py --dest D:\\goTCHA_frozen_20261021 --manifest results/data_manifest.json
     python admin-and-tests/freeze_data.py --dest <folder> backend/sessions.jsonl backend/consent.jsonl
     python admin-and-tests/freeze_data.py --verify results/data_manifest.json --dir D:\\goTCHA_frozen_20261021
+    python admin-and-tests/freeze_data.py --verify results/data_manifest.json --dir backend --card backend/model.joblib.card.json
 
 Freeze mode copies each file into --dest, checks the copy byte for byte against the source, marks the copy
 read-only and writes MANIFEST.json (file name, sha256, line count, size, time) next to the copies. It never
@@ -12,6 +13,10 @@ files exist in backend/. Stop the server first: a file that changes while it is 
 
 Verify mode re-hashes the files in --dir (default: the manifest's own folder) and exits 1 on any mismatch or
 missing file. Point --dir at backend/ to see whether the working files still match what was frozen.
+
+With --card MODEL.card.json, verify mode also checks which data a model was trained on: the card's data_files
+fingerprints (written by train.py) must match the manifest. A card with no data_files, written by a copy of
+train.py from before checksums, cannot be tied to any data and fails the check.
 
 The manifest holds names and checksums only, no participant data, so it is safe to commit.
 """
@@ -128,6 +133,37 @@ def verify(manifest_path: Path, directory: Path) -> List[str]:
     return lines
 
 
+def verify_card(manifest_path: Path, card_path: Path) -> List[str]:
+    """Is the model on this card trained on the data the manifest describes? One line per data file the card
+    names: 'ok ...', 'MISMATCH ...' or 'UNKNOWN ...'; a card that names none gives 'NO FINGERPRINT ...'."""
+    entries = _read_manifest(manifest_path)
+    if not entries:
+        raise FreezeError(f"{manifest_path} lists no files")
+    try:
+        card = json.loads(card_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise FreezeError(f"cannot read {card_path} as a model card ({exc})") from exc
+    if not isinstance(card, dict):
+        raise FreezeError(f"{card_path} is not a model card (expected a JSON object)")
+    trained = card.get("trained_at", "unknown time")
+    used = card.get("data_files")
+    if not used:
+        return [f"NO FINGERPRINT  {card_path.name} (trained {trained}) has no data_files, so it cannot be tied to "
+                f"any data. Retrain with a current train.py (git pull --ff-only first)."]
+    lines = []
+    for fp in used:
+        name, want = fp.get("file", "?"), entries.get(fp.get("file", "?"))
+        if want is None:
+            lines.append(f"UNKNOWN   model was trained on {name}, which is not in the manifest")
+        elif want["sha256"] == fp.get("sha256"):
+            lines.append(f"ok        model trained {trained} on {name} (sha256 {want['sha256'][:16]}..., "
+                         f"{want['lines']} lines), as frozen")
+        else:
+            lines.append(f"MISMATCH  model was trained on {name} sha256 {str(fp.get('sha256'))[:16]}..., "
+                         f"but the manifest has {want['sha256'][:16]}...: not the frozen version of that file")
+    return lines
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("files", nargs="*", type=Path, help="files to freeze (default: the usual study files in backend/)")
@@ -135,14 +171,19 @@ def main() -> int:
     ap.add_argument("--manifest", type=Path, help="also write the manifest here, e.g. results/data_manifest.json")
     ap.add_argument("--verify", type=Path, metavar="MANIFEST", help="check files against a manifest instead of freezing")
     ap.add_argument("--dir", type=Path, help="with --verify: where the files are (default: the manifest's folder)")
+    ap.add_argument("--card", type=Path, help="with --verify: also check this model card's data_files against the manifest")
     args = ap.parse_args()
+    if args.card and not args.verify:
+        ap.error("--card only works together with --verify")
 
     try:
         if args.verify:
             lines = verify(args.verify, args.dir or args.verify.parent)
+            if args.card:
+                lines += ["", f"Model card {args.card}:"] + verify_card(args.verify, args.card)
             print("\n".join(lines))
-            bad = [ln for ln in lines if not ln.startswith("ok")]
-            print("\nAll files match the manifest." if not bad else f"\n{len(bad)} file(s) do not match.")
+            bad = [ln for ln in lines if ln and not ln.startswith("ok") and not ln.startswith("Model card ")]
+            print("\nEverything matches the manifest." if not bad else f"\n{len(bad)} problem(s) found.")
             return 1 if bad else 0
         if not args.dest:
             ap.error("--dest is required when freezing")

@@ -69,7 +69,8 @@ The October 2026 evaluation could not independently verify what was excluded bef
    `python machine-learning/diff_filter.py --raw <frozen sessions.jsonl> --kept <derived file>`
    DROPPED lists what was excluded (it should be explainable: unlabeled traffic, invalid levels). ADDED should contain only what you merged in on purpose. The verdict line summarizes how the files relate, and the report shows each file's SHA-256.
 4. `train.py` (model card), `evaluate.py` (`report.md`, `metrics.json`) and `permutation_test.py` (`permutation.json`) record the SHA-256 of the file they read, provided the scripts are up to date (`git pull --ff-only` first; older copies write no fingerprint). Quote that value next to any number you report, and check it against the manifest:
-   `python admin-and-tests/freeze_data.py --verify results/data_manifest.json --dir backend`
+   `python admin-and-tests/freeze_data.py --verify results/data_manifest.json --dir backend --card backend/model.joblib.card.json`
+   (`--card` also checks that the model was trained on the frozen training file.)
 5. Before reporting how many participants completed, check which consent version each accepted:
    `python admin-and-tests/consent_audit.py`
    `results/CONSENT_VERSIONS.md` compares the texts; `results/PROVENANCE.md` records what the October 2026 data can and cannot show.
