@@ -1,4 +1,12 @@
 {
+  "data_files": [
+    {
+      "file": "sessions_model_training.jsonl",
+      "sha256": "12d6b0040ad40e55d159ce723668da25b202b88791f077cd3fb0272eeff011cc",
+      "lines": 117,
+      "bytes": 145663
+    }
+  ],
   "n_sessions": 87,
   "far": {
     "rate": 0.6,
@@ -220,5 +228,17 @@
   "pass_within_3": {
     "passes": 9,
     "people": 9
+  },
+  "far_model": {
+    "rate": 0.85,
+    "lo": 0.75,
+    "hi": 0.9333333333333333,
+    "n": 60,
+    "pids": 20,
+    "ci": "bootstrap"
+  },
+  "dup_rule": {
+    "only_by_dup": 15,
+    "bot_rejections": 24
   }
 }
