@@ -1,0 +1,24 @@
+#!/bin/sh
+# commit-msg: refuse a message that is really terminal text pasted into the message box:
+#   a command            git commit -m "Add x"      git -commit
+#   `git status` output  modified:   file.py        On branch main
+# Skip it for one commit with: git commit --no-verify
+
+msg_file="$1"
+
+# First line that is not blank and not a '#' comment (git drops comment lines from the final message).
+subject=$(grep -v '^[[:space:]]*#' "$msg_file" | grep -m1 '[^[:space:]]')
+
+# Ignore leading spaces and one opening quote, then look at how the line starts.
+probe=$(printf '%s\n' "$subject" | sed -e 's/^[[:space:]]*//' -e "s/^[\"']//")
+
+if printf '%s\n' "$probe" | grep -Eq '^git([[:space:]]|$)|^(modified|new file|deleted|renamed|typechange):|^(On branch|Your branch|Changes (not staged|to be committed)|Untracked files)'; then
+    {
+        echo "Commit message rejected: it looks like terminal text pasted into the message box."
+        echo "  got:   $subject"
+        echo "  write: Add the freeze tool          (just the message: no 'git commit -m', no 'git status' output)"
+        echo "  or:    tools: add the freeze tool   (optional 'area:' prefix)"
+        echo "To skip this check once: git commit --no-verify"
+    } >&2
+    exit 1
+fi

@@ -127,7 +127,7 @@ How to read this:
 
 ### Data provenance
 
-The evaluation file `backend/sessions_model_training.jsonl` (not tracked) is the 37 human records from `sessions.jsonl` plus 80 bot records (60 timed, 20 practice) from `sessions_bots.jsonl`. All 117 records are valid and labeled. An earlier, larger raw log is no longer available, and the bot records were extracted from the evaluation file itself, so the `results/diff_filter_*.txt` comparisons are consistency checks, not independent verification that nothing was excluded. Treat every figure as describing the evaluation file as it stands. `train.py`, `evaluate.py` and `permutation_test.py` now record the SHA-256 of the file they read, which ties a figure to one version of the data; the figures committed in `results/` predate that. `results/PROVENANCE.md` sets out what the data can and cannot show, and `results/CONSENT_VERSIONS.md` compares the five consent form versions used on the first day.
+The evaluation file `backend/sessions_model_training.jsonl` (not tracked) is the 37 human records from `sessions.jsonl` plus 80 bot records (60 timed, 20 practice) from `sessions_bots.jsonl`. All 117 records are valid and labeled. An earlier, larger raw log is no longer available, and the bot records were extracted from the evaluation file itself, so the `results/diff_filter_*.txt` comparisons are consistency checks, not independent verification that nothing was excluded. Treat every figure as describing the evaluation file as it stands. `train.py`, `evaluate.py` and `permutation_test.py` now record the SHA-256 of the file they read, which ties a figure to one version of the data; the figures and model card committed so far predate that and carry no fingerprint until `train.py` and `evaluate.py` are rerun on an up-to-date checkout. `results/PROVENANCE.md` sets out what the data can and cannot show, and `results/CONSENT_VERSIONS.md` compares the five consent form versions used on the first day.
 
 ## Model status and deployment
 
@@ -162,7 +162,7 @@ admin-and-tests/    bots, data tools (data_status.py, delete_participant.py, fre
 results/            evaluation outputs (report.md, metrics.json, permutation.json, plots, diff_filter_*.txt), PROVENANCE.md, CONSENT_VERSIONS.md
 ```
 
-Also: `gotcha_launcher.py`, `run_gotcha.bat`, `build_exe.bat`, `COLLECTION.md`, `requirements.txt`, and an older source snapshot, `goTCHA-project-main-v2-source.zip`, that is not kept in sync with the tracked files.
+Also: `gotcha_launcher.py`, `run_gotcha.bat`, `build_exe.bat`, `COLLECTION.md`, `CONTRIBUTING.md` (commit-message rules and the `.githooks/commit-msg` check), `requirements.txt`, and an older source snapshot, `goTCHA-project-main-v2-source.zip`, that is not kept in sync with the tracked files.
 
 ## Tests
 
