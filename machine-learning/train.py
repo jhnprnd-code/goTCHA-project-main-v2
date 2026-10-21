@@ -27,6 +27,7 @@ from sklearn.metrics import roc_auc_score
 from features import COARSE_STEP_MS
 from ml_common import (FEATURE_SETS, MIN_ATTEMPTS, TEST_ONLY_KINDS, Dataset, choose_threshold, load_records,
                        make_pipeline, oof_scores)
+from provenance import fingerprint
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--data", nargs="+", default=["sessions.jsonl"])
@@ -80,7 +81,7 @@ bundle = {
     "synthetic": ds.synthetic, "trained_at": time.strftime("%Y-%m-%d %H:%M:%S"),
     "n_human_sessions": int((train & (ds.y == 1)).sum()), "n_human_pids": len(h_pids),
     "n_bot_sessions": int((train & (ds.y == 0)).sum()), "bot_kinds": dict(Counter(ds.kind[train & (ds.y == 0)].tolist())),
-    "oof_auc": float(auc),
+    "oof_auc": float(auc), "data_files": [fingerprint(p) for p in args.data],
 }
 joblib.dump(bundle, args.out)
 card = {k: v for k, v in bundle.items() if k != "pipeline"}

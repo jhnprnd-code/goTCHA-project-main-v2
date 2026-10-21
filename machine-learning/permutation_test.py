@@ -31,6 +31,7 @@ from joblib import Parallel, delayed
 from sklearn.metrics import roc_auc_score
 
 from ml_common import (FEATURE_SETS, TEST_ONLY_KINDS, Dataset, dup_flags, load_records, logo_scores)
+from provenance import fingerprint
 
 # (label, key, which tail counts as "at least as good as observed")
 PRIMARY = [("AUC (learned model)", "auc", "hi"),
@@ -105,7 +106,7 @@ def main():
     shared = (X, y_id, kind_id, rows, ds.pid, ds.scorable, dup, args.C, args.target_frr)
     null = Parallel(n_jobs=args.jobs, verbose=5)(delayed(shuffle_run)(sd, *shared) for sd in seeds)
 
-    out = {"data": [str(p) for p in args.data], "perms": args.perms, "seed": args.seed, "features": args.features,
+    out = {"data": [str(p) for p in args.data], "data_files": [fingerprint(p) for p in args.data], "perms": args.perms, "seed": args.seed, "features": args.features,
            "n_sessions": len(recs), "n_people": int(len(ids)), "synthetic": ds.synthetic, "observed": obs, "stats": {}}
     banner = "SYNTHETIC DATA: pipeline test only, do not quote.\n" if ds.synthetic else ""
     print(f"\n{banner}Permutation test, {args.perms} shuffles of participant identities (seed {args.seed})\n")
