@@ -42,6 +42,7 @@ from features import COARSE_STEP_MS, FEATURES, estimate_step, extract
 from gamecore import pair_strokes
 from ml_common import FEATURE_SETS, MIN_ATTEMPTS, TEST_ONLY_KINDS, Dataset, dup_flags, load_records
 from ml_common import logo_scores as _logo_scores
+from provenance import fingerprint, short
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--data", nargs="+", default=["sessions.jsonl"])
@@ -62,6 +63,7 @@ out.mkdir(parents=True, exist_ok=True)
 recs, skipped = load_records(args.data, args.allow_synthetic)
 if not recs:
     raise SystemExit(f"No usable sessions. Skipped: {dict(skipped)}")
+data_files = [fingerprint(p) for p in args.data]
 ds = Dataset(recs)
 names = FEATURE_SETS[args.features]
 X = ds.cols(names)
@@ -175,6 +177,12 @@ for k in kinds:
     a, _ = auc_eer(sc, ds.scorable & (human | m))
     unseen[k] = {"far": cluster_rate(acc, m), "auc": a}
 
+# What the learned model does without the duplicate rule. Computed last on purpose: cluster_rate draws
+# from the shared bootstrap RNG, so placing it earlier would shift every interval above it.
+far_model_all = cluster_rate(model_accept, bots)
+dup_only = int((bots & model_accept & ~accepted).sum())    # bots the model alone would accept but the duplicate rule rejects
+bot_rejected = int((bots & ~accepted).sum())
+
 # ------------------------------------------------------------------ ablations
 print("feature-set ablation...", flush=True)
 feat_abl = {}
@@ -271,7 +279,8 @@ banner = ""
 if ds.synthetic:
     banner = ("> **SYNTHETIC DATA.** At least one session comes from `synth_data.py`, a generator we wrote. "
               "These numbers test the pipeline only and are circular. Do not put them in the paper.\n\n")
-L = [f"# goTCHA evaluation\n\n{banner}Generated {time.strftime('%Y-%m-%d %H:%M')} from {', '.join(args.data)}.\n"]
+L = [f"# goTCHA evaluation\n\n{banner}Generated {time.strftime('%Y-%m-%d %H:%M')} from {', '.join(args.data)}.\n"
+     f"Data read: {'; '.join(short(fp) for fp in data_files)}.\n"]
 L.append("## Dataset\n")
 L.append(f"- Sessions used: {n} ({int(human.sum())} human from {len(set(ds.pid[human]))} people; "
          f"{int(bots.sum())} bot from {len(set(ds.pid[bots]))} bot runs)")
@@ -289,6 +298,9 @@ L.append(f"- **FRR (strict, includes inconclusive):** {pct(frr_strict)}")
 L.append(f"- FRR (model only, scorable sessions): {pct(frr_model)}")
 L.append(f"- **FAR (all bot sessions):** {pct(far_all)}")
 L.append(f"- FAR excluding test-only attackers: {pct(far_trainkinds)}")
+L.append(f"- **FAR (learned model alone, no duplicate rule):** {pct(far_model_all)}")
+L.append(f"- Duplicate rule: {dup_only} of {bot_rejected} bot rejections are sessions the model alone would have accepted"
+         if bot_rejected else "- Duplicate rule: no bot sessions were rejected")
 L.append(f"- AUC {auc:.3f}, EER {eer:.1%} (optimistic: EER picks its threshold on test scores)")
 L.append(f"- Human passes within 3 attempts: {passes}/{n_h} people ({passes / max(n_h, 1):.0%}, "
          f"95% Wilson CI [{p3_lo:.0%}, {p3_hi:.0%}])")
@@ -339,12 +351,13 @@ L += [
 ]
 (out / "report.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
-metrics = {"n_sessions": n, "far": far_all, "frr_strict": frr_strict, "frr_model": frr_model, "auc": auc, "eer": eer,
+metrics = {"data_files": data_files, "n_sessions": n, "far": far_all, "frr_strict": frr_strict, "frr_model": frr_model, "auc": auc, "eer": eer,
            "per_kind": per_kind,
            "per_group": per_group, "unseen": unseen, "synthetic": ds.synthetic,
            "confusion": {"human_accepted": H_acc, "human_not_accepted": H_rej,
                          "bot_accepted": B_acc, "bot_not_accepted": B_rej},
-           "pass_within_3": {"passes": passes, "people": n_h}}
+           "pass_within_3": {"passes": passes, "people": n_h},
+           "far_model": far_model_all, "dup_rule": {"only_by_dup": dup_only, "bot_rejections": bot_rejected}}
 (out / "metrics.json").write_text(json.dumps(metrics, indent=2, default=str), encoding="utf-8")
 print(f"\ndone in {time.time() - t0:.0f}s -> {out}/report.md")
-print("\n".join(L[3:16]))
+print("\n".join(L[3:18]))
