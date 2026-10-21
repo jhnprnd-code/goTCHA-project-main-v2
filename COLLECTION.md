@@ -61,15 +61,18 @@ The accessibility claim therefore rests on 4 low-vision participants: a pilot wi
 
 The October 2026 evaluation could not independently verify what was excluded before the training file was assembled, because the original raw backup had been lost. To avoid that:
 
-1. **Before** merging, filtering or splitting anything, copy the raw files untouched (for example `sessions_original_YYYYMMDD.jsonl` and `consent_original_YYYYMMDD.jsonl`), mark the copies read-only, and keep them somewhere other than the working folder.
-2. Record a checksum of each original when you copy it:
-   - Windows PowerShell: `Get-FileHash backend\sessions.jsonl -Algorithm SHA256`
-   - macOS / Linux: `sha256sum backend/sessions.jsonl`
-3. Build every derived file (merged, bot-split, training) **from the copy**, never by editing the original in place.
-4. Check each derived file against the original:
-   `python machine-learning/diff_filter.py --raw sessions_original_YYYYMMDD.jsonl --kept <derived file>`
-   DROPPED lists what was excluded (it should be explainable: unlabeled traffic, invalid levels). ADDED should contain only what you merged in on purpose. The verdict line summarizes how the files relate.
-5. `evaluate.py` (in `report.md`) and `permutation_test.py` (in `permutation.json`) record which file they read; note that file's checksum next to any number you report.
+1. **Before** merging, filtering or splitting anything, stop the server and freeze the raw files untouched:
+   `python admin-and-tests/freeze_data.py --dest <folder outside the project> --manifest results/data_manifest.json`
+   It copies `sessions.jsonl`, `consent.jsonl` and the other study files found in `backend/`, checks each copy byte for byte, marks the copies read-only, and records a SHA-256, line count and size for each in `MANIFEST.json`. It never overwrites a different file already in the destination. The manifest holds no data and can be committed.
+2. Build every derived file (merged, bot-split, training) **from the frozen copy**, never by editing the original in place.
+3. Check each derived file against the original:
+   `python machine-learning/diff_filter.py --raw <frozen sessions.jsonl> --kept <derived file>`
+   DROPPED lists what was excluded (it should be explainable: unlabeled traffic, invalid levels). ADDED should contain only what you merged in on purpose. The verdict line summarizes how the files relate, and the report shows each file's SHA-256.
+4. `train.py` (model card), `evaluate.py` (`report.md`, `metrics.json`) and `permutation_test.py` (`permutation.json`) record the SHA-256 of the file they read. Quote that value next to any number you report, and check it against the manifest:
+   `python admin-and-tests/freeze_data.py --verify results/data_manifest.json --dir backend`
+5. Before reporting how many participants completed, check which consent version each accepted:
+   `python admin-and-tests/consent_audit.py`
+   `results/CONSENT_VERSIONS.md` compares the texts; `results/PROVENANCE.md` records what the October 2026 data can and cannot show.
 
 ## 7. Known limits of this harness
 
@@ -78,3 +81,4 @@ The October 2026 evaluation could not independently verify what was excluded bef
 - The game needs a physical keyboard and the ability to see the moving blocks.
 - 'admin-and-tests/e2e_collect.py' re-runs the whole flow in headless Chromium (about 2 minutes) using temporary files. Run it after any change.
 - 'admin-and-tests/test_coarse_ua.py' checks that the stored user-agent keeps only the browser name and version.
+- 'admin-and-tests/test_provenance_tools.py' checks the checksum, freeze and consent-audit tools on temporary files.

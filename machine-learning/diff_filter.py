@@ -15,8 +15,9 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from provenance import fingerprint
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT =Path(__file__).resolve().parent.parent
 
 
 def read_rows(path: Path) -> tuple[list[dict], int, int]:
@@ -58,7 +59,9 @@ def describe_file(name: str, path: Path, rows: list[dict], blank: int, bad: int)
     keys = Counter(record_key(row) for row in rows)
     duplicates = sum(count - 1 for count in keys.values())
     total = len(rows) + blank + bad
+    fp = fingerprint(path)
     return [f"{name}: {path}",
+            f"  sha256 {fp['sha256']} ({fp['bytes']} bytes)",
             f"  {total} lines = {len(rows)} records + {blank} blank + {bad} unparseable",
             f"  {len(keys)} distinct (pid, level_idx, ts) keys ({duplicates} duplicate)"]
 
