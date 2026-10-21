@@ -27,7 +27,7 @@
   "min_attempts": 5,
   "coarse_step_ms": 15.0,
   "synthetic": false,
-  "trained_at": "2026-10-21 10:45:29",
+  "trained_at": "2026-10-21 11:06:45",
   "n_human_sessions": 27,
   "n_human_pids": 9,
   "n_bot_sessions": 48,
@@ -37,5 +37,13 @@
     "pw_fitted": 12,
     "pw_adaptive": 12
   },
-  "oof_auc": 0.7229938271604939
+  "oof_auc": 0.7229938271604939,
+  "data_files": [
+    {
+      "file": "sessions_model_training.jsonl",
+      "sha256": "12d6b0040ad40e55d159ce723668da25b202b88791f077cd3fb0272eeff011cc",
+      "lines": 117,
+      "bytes": 145663
+    }
+  ]
 }
