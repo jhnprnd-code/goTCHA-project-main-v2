@@ -162,7 +162,7 @@ admin-and-tests/    bots, data tools (data_status.py, delete_participant.py, fre
 results/            evaluation outputs (report.md, metrics.json, permutation.json, plots, diff_filter_*.txt), PROVENANCE.md, CONSENT_VERSIONS.md
 ```
 
-Also: `gotcha_launcher.py`, `run_gotcha.bat`, `build_exe.bat`, `COLLECTION.md`, `requirements.txt`, and an older source snapshot, `goTCHA-project-main-v2-source.zip`, that is not kept in sync with the tracked files.
+Also: `gotcha_launcher.py`, `run_gotcha.bat`, `build_exe.bat`, `COLLECTION.md`, `CONTRIBUTING.md` (commit-message rules and the `.githooks/commit-msg` check), `requirements.txt`, and an older source snapshot, `goTCHA-project-main-v2-source.zip`, that is not kept in sync with the tracked files.
 
 ## Tests
 

@@ -1,0 +1,21 @@
+#!/bin/sh
+# commit-msg: refuse a message that is really a shell command pasted into the message box,
+# e.g.  git commit -m "Add x"   or   git -commit
+# Skip it for one commit with: git commit --no-verify
+
+msg_file="$1"
+
+# First line that is not blank and not a '#' comment (git drops comment lines from the final message).
+subject=$(grep -v '^[[:space:]]*#' "$msg_file" | grep -m1 '[^[:space:]]')
+
+# 'git' as the first word, optionally after spaces or an opening quote: "git commit ...", "git -commit", "git".
+if printf '%s\n' "$subject" | grep -Eq "^[[:space:]]*[\"']?git([[:space:]]|\$)"; then
+    {
+        echo "Commit message rejected: it starts with 'git', so it looks like a command pasted into the message box."
+        echo "  got:   $subject"
+        echo "  write: Add the freeze tool          (just the message, no 'git commit -m')"
+        echo "  or:    tools: add the freeze tool   (optional 'area:' prefix)"
+        echo "To skip this check once: git commit --no-verify"
+    } >&2
+    exit 1
+fi

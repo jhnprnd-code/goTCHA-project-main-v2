@@ -1,0 +1,2 @@
+# The hook is run by sh; a CRLF checkout on Windows would break its first line.
+.githooks/* text eol=lf
