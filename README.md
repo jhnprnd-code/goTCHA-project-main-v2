@@ -86,7 +86,7 @@ Both are gitignored. Back them up and never commit them. To withdraw a participa
 | `machine-learning/evaluate.py` | Confusion matrix, FAR/FRR with intervals, ROC, per-attacker, unseen-attacker and ablation tables; writes `results/` |
 | `machine-learning/permutation_test.py` | Is the result better than chance at this sample size? |
 | `machine-learning/diff_filter.py` | Compare a raw session file with the evaluation file in both directions; prints each file's SHA-256 |
-| `admin-and-tests/freeze_data.py` | Copy the raw study files to a read-only folder with a checksum manifest; `--verify` checks files against it later |
+| `admin-and-tests/freeze_data.py` | Copy the raw study files to a read-only folder with a checksum manifest; `--verify` checks files against it later, and `--card` checks which data a model was trained on |
 | `admin-and-tests/consent_audit.py` | Which consent version each participant accepted, and how many completers were on an older one |
 | `machine-learning/analyze_artifacts.py` | Does browser automation leave timing artifacts? |
 | `admin-and-tests/bot_playwright.py`, `admin-and-tests/bot_api.py`, `admin-and-tests/bot_lib.py` | The scripted attackers: perfect, gauss, fitted, adaptive, replay |
@@ -127,7 +127,7 @@ How to read this:
 
 ### Data provenance
 
-The evaluation file `backend/sessions_model_training.jsonl` (not tracked) is the 37 human records from `sessions.jsonl` plus 80 bot records (60 timed, 20 practice) from `sessions_bots.jsonl`. All 117 records are valid and labeled. An earlier, larger raw log is no longer available, and the bot records were extracted from the evaluation file itself, so the `results/diff_filter_*.txt` comparisons are consistency checks, not independent verification that nothing was excluded. Treat every figure as describing the evaluation file as it stands. `train.py`, `evaluate.py` and `permutation_test.py` now record the SHA-256 of the file they read, which ties a figure to one version of the data; the figures and model card committed so far predate that and carry no fingerprint until `train.py` and `evaluate.py` are rerun on an up-to-date checkout. `results/PROVENANCE.md` sets out what the data can and cannot show, and `results/CONSENT_VERSIONS.md` compares the five consent form versions used on the first day.
+The evaluation file `backend/sessions_model_training.jsonl` (not tracked) is the 37 human records from `sessions.jsonl` plus 80 bot records (60 timed, 20 practice) from `sessions_bots.jsonl`. All 117 records are valid and labeled. An earlier, larger raw log is no longer available, and the bot records were extracted from the evaluation file itself, so the `results/diff_filter_*.txt` comparisons are consistency checks, not independent verification that nothing was excluded. Treat every figure as describing the evaluation file as it stands. `train.py`, `evaluate.py` and `permutation_test.py` now record the SHA-256 of the file they read, which ties a figure to one version of the data; the model card, `report.md` and `metrics.json` carry it since 2026-10-21, while `permutation.json` does not until it is rerun. `results/PROVENANCE.md` sets out what the data can and cannot show, and `results/CONSENT_VERSIONS.md` compares the five consent form versions used on the first day.
 
 ## Model status and deployment
 

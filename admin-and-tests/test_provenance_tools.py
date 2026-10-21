@@ -132,6 +132,79 @@ class Freeze(Scratch):
         self.assertEqual((dest / "MANIFEST.json").read_text(), "not json")
 
 
+class VerifyCard(Scratch):
+    def setUp(self):
+        super().setUp()
+        self.train = self.write("sessions_model_training.jsonl", "a\nb\nc\n", self.dir / "backend")
+        self.manifest = self.dir / "results" / "data_manifest.json"
+        freeze_data.freeze([self.train], self.dir / "frozen", self.manifest)
+
+    def card(self, **fields):
+        body = {"trained_at": "2026-10-21 10:45:29", "oof_auc": 0.723, **fields}
+        return self.write("model.joblib.card.json", json.dumps(body), self.dir / "backend")
+
+    def run_cli(self, *args):
+        import subprocess
+        return subprocess.run([sys.executable, str(HERE / "freeze_data.py"), *map(str, args)],
+                              capture_output=True, text=True)
+
+    def test_card_trained_on_the_frozen_file_is_ok(self):
+        card = self.card(data_files=[fingerprint(self.train)])
+        lines = freeze_data.verify_card(self.manifest, card)
+        self.assertEqual(len(lines), 1)
+        self.assertTrue(lines[0].startswith("ok") and "sessions_model_training.jsonl" in lines[0])
+
+    def test_card_without_data_files_fails(self):
+        for card in (self.card(), self.card(data_files=[])):
+            lines = freeze_data.verify_card(self.manifest, card)
+            self.assertEqual(len(lines), 1)
+            self.assertTrue(lines[0].startswith("NO FINGERPRINT"))
+            self.assertIn("2026-10-21 10:45:29", lines[0])
+
+    def test_card_for_a_different_version_of_the_file_is_a_mismatch(self):
+        other = self.write("sessions_model_training.jsonl", "a\nb\nc\nd\n", self.dir / "elsewhere")
+        lines = freeze_data.verify_card(self.manifest, self.card(data_files=[fingerprint(other)]))
+        self.assertTrue(lines[0].startswith("MISMATCH"))
+
+    def test_card_naming_a_file_the_manifest_lacks_is_unknown(self):
+        other = self.write("sessions_other.jsonl", "x\n", self.dir / "backend")
+        lines = freeze_data.verify_card(self.manifest, self.card(data_files=[fingerprint(self.train), fingerprint(other)]))
+        self.assertEqual([l.split()[0] for l in lines], ["ok", "UNKNOWN"])
+
+    def test_unreadable_card_is_an_error_not_a_pass(self):
+        bad = self.write("bad.card.json", "not json", self.dir / "backend")
+        with self.assertRaises(freeze_data.FreezeError):
+            freeze_data.verify_card(self.manifest, bad)
+        listy = self.write("list.card.json", "[1, 2]", self.dir / "backend")
+        with self.assertRaises(freeze_data.FreezeError):
+            freeze_data.verify_card(self.manifest, listy)
+        with self.assertRaises(freeze_data.FreezeError):
+            freeze_data.verify_card(self.manifest, self.dir / "missing.card.json")
+
+    def test_cli_exit_codes(self):
+        backend = self.train.parent
+        good = self.card(data_files=[fingerprint(self.train)])
+        ok = self.run_cli("--verify", self.manifest, "--dir", backend, "--card", good)
+        self.assertEqual(ok.returncode, 0, ok.stdout + ok.stderr)
+        self.assertIn("Everything matches the manifest.", ok.stdout)
+        stale = self.card()                                          # a card written before checksums existed
+        no = self.run_cli("--verify", self.manifest, "--dir", backend, "--card", stale)
+        self.assertEqual(no.returncode, 1)
+        self.assertIn("NO FINGERPRINT", no.stdout)
+        self.assertIn("1 problem(s) found.", no.stdout)
+        self.assertEqual(self.run_cli("--card", good).returncode, 2)  # --card without --verify
+        plain = self.run_cli("--verify", self.manifest, "--dir", backend)
+        self.assertEqual(plain.returncode, 0)                         # without --card the card is not looked at
+
+    def test_data_changed_after_freezing_fails_even_when_the_card_matches(self):
+        card = self.card(data_files=[fingerprint(self.train)])
+        self.train.write_bytes(b"a\nb\nc\nEDITED\n")
+        res = self.run_cli("--verify", self.manifest, "--dir", self.train.parent, "--card", card)
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("MISMATCH  sessions_model_training.jsonl", res.stdout)
+        self.assertIn("ok        model trained", res.stdout)           # the card still matches the frozen file
+
+
 def consent_row(pid, version, ts, label="human", group="low_vision"):
     return {"pid": pid, "ts": ts, "consent_version": version, "label": label, "group": group}
 
