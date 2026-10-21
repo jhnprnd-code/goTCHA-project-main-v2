@@ -1,6 +1,7 @@
 # goTCHA evaluation
 
-Generated 2026-10-21 10:31 from backend\sessions_model_training.jsonl.
+Generated 2026-10-21 11:07 from backend\sessions_model_training.jsonl.
+Data read: sessions_model_training.jsonl (sha256 12d6b0040ad40e55..., 117 lines).
 
 ## Dataset
 
@@ -21,6 +22,8 @@ Generated 2026-10-21 10:31 from backend\sessions_model_training.jsonl.
 - FRR (model only, scorable sessions): 0.0% [0.0%, 29.9%]*
 - **FAR (all bot sessions):** 60.0% [41.7%, 78.3%]
 - FAR excluding test-only attackers: 62.5% [43.8%, 81.2%]
+- **FAR (learned model alone, no duplicate rule):** 85.0% [75.0%, 93.3%]
+- Duplicate rule: 15 of 24 bot rejections are sessions the model alone would have accepted
 - AUC 0.720, EER 36.0% (optimistic: EER picks its threshold on test scores)
 - Human passes within 3 attempts: 9/9 people (100%, 95% Wilson CI [70%, 100%])
 
