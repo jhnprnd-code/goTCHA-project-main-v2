@@ -27,7 +27,7 @@
   "min_attempts": 5,
   "coarse_step_ms": 15.0,
   "synthetic": false,
-  "trained_at": "2026-10-20 16:39:29",
+  "trained_at": "2026-10-21 10:45:29",
   "n_human_sessions": 27,
   "n_human_pids": 9,
   "n_bot_sessions": 48,
