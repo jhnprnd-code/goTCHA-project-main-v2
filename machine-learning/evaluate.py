@@ -42,6 +42,7 @@ from features import COARSE_STEP_MS, FEATURES, estimate_step, extract
 from gamecore import pair_strokes
 from ml_common import FEATURE_SETS, MIN_ATTEMPTS, TEST_ONLY_KINDS, Dataset, dup_flags, load_records
 from ml_common import logo_scores as _logo_scores
+from provenance import fingerprint, short
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--data", nargs="+", default=["sessions.jsonl"])
@@ -62,6 +63,7 @@ out.mkdir(parents=True, exist_ok=True)
 recs, skipped = load_records(args.data, args.allow_synthetic)
 if not recs:
     raise SystemExit(f"No usable sessions. Skipped: {dict(skipped)}")
+data_files = [fingerprint(p) for p in args.data]
 ds = Dataset(recs)
 names = FEATURE_SETS[args.features]
 X = ds.cols(names)
@@ -277,7 +279,8 @@ banner = ""
 if ds.synthetic:
     banner = ("> **SYNTHETIC DATA.** At least one session comes from `synth_data.py`, a generator we wrote. "
               "These numbers test the pipeline only and are circular. Do not put them in the paper.\n\n")
-L = [f"# goTCHA evaluation\n\n{banner}Generated {time.strftime('%Y-%m-%d %H:%M')} from {', '.join(args.data)}.\n"]
+L = [f"# goTCHA evaluation\n\n{banner}Generated {time.strftime('%Y-%m-%d %H:%M')} from {', '.join(args.data)}.\n"
+     f"Data read: {'; '.join(short(fp) for fp in data_files)}.\n"]
 L.append("## Dataset\n")
 L.append(f"- Sessions used: {n} ({int(human.sum())} human from {len(set(ds.pid[human]))} people; "
          f"{int(bots.sum())} bot from {len(set(ds.pid[bots]))} bot runs)")
@@ -348,7 +351,7 @@ L += [
 ]
 (out / "report.md").write_text("\n".join(L) + "\n", encoding="utf-8")
 
-metrics = {"n_sessions": n, "far": far_all, "frr_strict": frr_strict, "frr_model": frr_model, "auc": auc, "eer": eer,
+metrics = {"data_files": data_files, "n_sessions": n, "far": far_all, "frr_strict": frr_strict, "frr_model": frr_model, "auc": auc, "eer": eer,
            "per_kind": per_kind,
            "per_group": per_group, "unseen": unseen, "synthetic": ds.synthetic,
            "confusion": {"human_accepted": H_acc, "human_not_accepted": H_rej,
