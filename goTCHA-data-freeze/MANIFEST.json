@@ -1,0 +1,40 @@
+{
+  "note": "Names and checksums only; no participant data.",
+  "files": [
+    {
+      "file": "consent.jsonl",
+      "sha256": "3d0f16a1634ff7b8311eecba06a7a2ea1c4ee3bf6f1debbd1f1c9f694ef829d5",
+      "lines": 12,
+      "bytes": 1970,
+      "frozen_at": "2026-10-21T03:06:28Z"
+    },
+    {
+      "file": "sessions.jsonl",
+      "sha256": "b59336232b86cc1a1ef5f997a039fff1b2f11e9a53b9cb6350385dcd16c89854",
+      "lines": 37,
+      "bytes": 47099,
+      "frozen_at": "2026-10-21T03:06:28Z"
+    },
+    {
+      "file": "sessions_backup.jsonl",
+      "sha256": "12d6b0040ad40e55d159ce723668da25b202b88791f077cd3fb0272eeff011cc",
+      "lines": 117,
+      "bytes": 145663,
+      "frozen_at": "2026-10-21T03:06:28Z"
+    },
+    {
+      "file": "sessions_bots.jsonl",
+      "sha256": "690ea3fcdab735c872dc6e05d33c0378df547ff0a21719b5e4753490326b649f",
+      "lines": 80,
+      "bytes": 98564,
+      "frozen_at": "2026-10-21T03:06:28Z"
+    },
+    {
+      "file": "sessions_model_training.jsonl",
+      "sha256": "12d6b0040ad40e55d159ce723668da25b202b88791f077cd3fb0272eeff011cc",
+      "lines": 117,
+      "bytes": 145663,
+      "frozen_at": "2026-10-21T03:06:28Z"
+    }
+  ]
+}

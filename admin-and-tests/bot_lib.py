@@ -1,6 +1,6 @@
 """
 Attacker library: timing generators shared by the API bots, the Playwright bot and the
-synthetic-data generator. For testing YOUR OWN server only.
+synthetic-data generator. For testing my own server only.
 
 The attacker ladder, weakest to strongest:
   perfect   exact ideal timing, constant key hold
