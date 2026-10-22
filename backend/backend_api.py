@@ -41,9 +41,8 @@ from fastapi import FastAPI, HTTPException, Request  # type: ignore[import-not-f
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore[import-not-found]
 from fastapi.responses import FileResponse  # type: ignore[import-not-found]
 from pydantic import BaseModel, Field  # type: ignore[import-not-found]
-
-from gamecore import GAME, make_layout, replay
-from model_runtime import ModelRuntime, load_model
+from gamecore import (GAME, N_OBSTACLES, AIRTIME_MS, LEAD_IN_MS, MIN_GAP_MS, MAX_GAP_MS,
+                         make_layout, replay, obstacle_window)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("gotcha")

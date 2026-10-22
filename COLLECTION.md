@@ -57,24 +57,7 @@ The accessibility claim therefore rests on 4 low-vision participants: a pilot wi
 - Back both up after each day. Do not commit them to a public repository.
 - Bot data is labeled separately and needs 'GOTCHA_ADMIN_KEY'; the public page cannot create bot-labeled rows.
 
-## 6. Keep the original data safe
-
-The October 2026 evaluation could not independently verify what was excluded before the training file was assembled, because the original raw backup had been lost. To avoid that:
-
-1. **Before** merging, filtering or splitting anything, stop the server and freeze the raw files untouched:
-   `python admin-and-tests/freeze_data.py --dest <folder outside the project> --manifest results/data_manifest.json`
-   It copies `sessions.jsonl`, `consent.jsonl` and the other study files found in `backend/`, checks each copy byte for byte, marks the copies read-only, and records a SHA-256, line count and size for each in `MANIFEST.json`. It never overwrites a different file already in the destination. The manifest holds no data and can be committed.
-2. Build every derived file (merged, bot-split, training) **from the frozen copy**, never by editing the original in place.
-3. Check each derived file against the original:
-   `python machine-learning/diff_filter.py --raw <frozen sessions.jsonl> --kept <derived file>`
-   DROPPED lists what was excluded (it should be explainable: unlabeled traffic, invalid levels). ADDED should contain only what you merged in on purpose. The verdict line summarizes how the files relate, and the report shows each file's SHA-256.
-4. `train.py` (model card), `evaluate.py` (`report.md`, `metrics.json`) and `permutation_test.py` (`permutation.json`) record the SHA-256 of the file they read, provided the scripts are up to date (`git pull --ff-only` first; older copies write no fingerprint). Quote that value next to any number you report, and check it against the manifest:
-   `python admin-and-tests/freeze_data.py --verify results/data_manifest.json --dir backend`
-5. Before reporting how many participants completed, check which consent version each accepted:
-   `python admin-and-tests/consent_audit.py`
-   `results/CONSENT_VERSIONS.md` compares the texts; `results/PROVENANCE.md` records what the October 2026 data can and cannot show.
-
-## 7. Known limits of this harness
+## 6. Known limits of this harness
 
 - "Human" labels are self-attested by whoever opens the link. Share the link only with people you recruit.
 - Telemetry is reported by the browser, so it is evidence for calibration, not proof.
