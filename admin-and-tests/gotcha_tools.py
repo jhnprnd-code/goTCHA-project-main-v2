@@ -1,10 +1,3 @@
-"""
-Unified goTCHA operational toolkit.
-Usage:
-  python gotcha_tools.py bots --admin-key test-admin --human-data sessions.jsonl
-  python gotcha_tools.py merge --sessions data1.jsonl data2.jsonl --consent consent.jsonl --consent-out final_consent.jsonl --out final_sessions.jsonl
-  python gotcha_tools.py calibrate --sessions final_sessions.jsonl
-"""
 import argparse
 import json
 import os

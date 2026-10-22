@@ -1,16 +1,3 @@
-"""
-End-to-end test of the collection flow in a real (headless) Chromium.
-
-    python admin-and-tests/e2e_collect.py
-
-Starts its own server on port 8100 with temp data files, so it never touches your real
-sessions.jsonl. Checks:
-  * consent gating and API guards
-  * the full UI flow: consent -> about -> practice + 3 timed levels -> participant code
-  * the client's hit count agrees with the server's physics replay (no client/server drift)
-  * a main-thread stall is detected and the level is flagged for a redo (frame gate)
-  * /verify returns "retry" for stuttering sessions, capped at MAX_RETRIES per IP
-"""
 import json
 import os
 import random

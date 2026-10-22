@@ -1,9 +1,3 @@
-"""
-Checks that the user-agent is reduced to browser name, major version and mobile / in-app flags
-before it is stored, as the study page promises ("browser name and version").
-
-    python admin-and-tests/test_coarse_ua.py
-"""
 import os
 import sys
 import tempfile

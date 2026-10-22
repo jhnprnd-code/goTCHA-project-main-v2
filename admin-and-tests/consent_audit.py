@@ -1,15 +1,3 @@
-"""
-Which version of the consent form did each participant accept? Run it on the machine that holds the data:
-
-    python admin-and-tests/consent_audit.py [sessions.jsonl] [consent.jsonl] [--current 2026-10-v5]
-
-Joins consent.jsonl (the version and time each participant agreed) with sessions.jsonl (how many valid timed
-levels they played), then lists everyone, summarizes by consent version, and flags participants who completed
-the study under a version other than the current one. Prints to the terminal only. The per-participant table
-shows participant codes, so do not commit its output; the by-version summary has no codes in it.
-
-The consent texts themselves are compared in results/CONSENT_VERSIONS.md.
-"""
 import argparse
 import json
 import re

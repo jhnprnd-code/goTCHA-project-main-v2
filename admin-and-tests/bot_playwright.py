@@ -1,10 +1,3 @@
-"""
-Unified browser-automation attacker: drives the REAL collection page via Playwright.
-Supports headless concurrency or headed visual debugging.
-
-    python bot_playwright.py --kind gauss --runs 4 --levels 3 --admin-key $GOTCHA_ADMIN_KEY
-    python bot_playwright.py --kind replay --pool sessions.jsonl --headed
-"""
 import argparse
 import asyncio
 import json

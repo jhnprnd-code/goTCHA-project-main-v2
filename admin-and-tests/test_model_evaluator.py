@@ -1,9 +1,3 @@
-"""
-Checks that the trained model is a BaseEvaluator, so /verify calls one interface and never has to
-ask which engine is loaded.
-
-    python admin-and-tests/test_model_evaluator.py
-"""
 import json
 import os
 import random

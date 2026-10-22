@@ -1,11 +1,4 @@
-"""
-Delete everything for one participant code (withdrawal requests).
 
-    python admin-and-tests/delete_participant.py P1A2B3C [sessions.jsonl] [consent.jsonl]
-
-Rewrites both files without that participant. Stop the server first (or restart it
-afterwards), because the server keeps the registry in memory.
-"""
 import json
 import sys
 from pathlib import Path

@@ -1,19 +1,3 @@
-"""
-Attacker library: timing generators shared by the API bots, the Playwright bot and the
-synthetic-data generator. For testing my own server only.
-
-The attacker ladder, weakest to strongest:
-  perfect   exact ideal timing, constant key hold
-  gauss     i.i.d. Gaussian timing noise (the attack that beat the rule-based engine)
-  fitted    i.i.d. draws from the pooled human error/dwell distributions (matches marginals,
-            has no temporal structure)
-  adaptive  knows our features: AR(1) correlation, linear drift, asymmetric noise, dwell
-            coupled to error. Built from textbook assumptions, not from data.
-  replay    replays the per-obstacle error/dwell sequence of a recorded human level
-            (assumes the attacker obtained recorded human sessions)
-
-fitted and replay need a pool of real human sessions (--pool sessions.jsonl).
-"""
 import json
 import math
 import random
