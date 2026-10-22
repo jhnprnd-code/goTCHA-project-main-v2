@@ -43,7 +43,7 @@ from fastapi.responses import FileResponse  # type: ignore[import-not-found]
 from pydantic import BaseModel, Field  # type: ignore[import-not-found]
 
 from gamecore import GAME, make_layout, replay
-from model_runtime import load_model
+from model_runtime import ModelRuntime, load_model
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("gotcha")
@@ -259,7 +259,7 @@ class VerificationEngine(BaseEvaluator):
         return strokes, None, feats
 
     def behavior(self, ch: Challenge, strokes: List[list], feats: dict) -> Verdict:
-        """Rule-based behavioral verdict. The trained model replaces this method."""
+        """Rule-based behavioral verdict. ModelEvaluator replaces this when a trained model is loaded."""
         bot, inconclusive = [], []
         accepted, per_obs = replay(ch.spawns_ms, strokes)
         n_obs = len(ch.spawns_ms)
@@ -307,6 +307,31 @@ class VerificationEngine(BaseEvaluator):
 
 
 engine = VerificationEngine()
+
+
+class ModelEvaluator(BaseEvaluator):
+    """The trained model behind the same interface: the hard rules are the rule engine's, the verdict is the model's."""
+
+    def __init__(self, runtime: ModelRuntime, rules: BaseEvaluator):
+        self.runtime = runtime
+        self.rules = rules
+
+    def precheck(self, ch: Challenge, events: List[Event], elapsed_ms: float):
+        return self.rules.precheck(ch, events, elapsed_ms)
+
+    def behavior(self, ch: Challenge, strokes: List[list], feats: dict) -> Verdict:
+        events = [{"k": k, "t": t} for down, up in strokes for k, t in (("d", down), ("u", up)) if t is not None]
+        out = self.runtime.judge({"spawns_ms": ch.spawns_ms, "events": events})
+        return Verdict(out["verdict"], [out["reason"]], feats)
+
+
+def pick_evaluator(rules: BaseEvaluator, runtime: Optional[ModelRuntime]) -> BaseEvaluator:
+    """The one evaluator /verify uses: the trained model when one loaded, otherwise the rule engine."""
+    return ModelEvaluator(runtime, rules) if runtime else rules
+
+
+evaluator = pick_evaluator(engine, ml_engine)
+log.info("verdict evaluator: %s", type(evaluator).__name__)
 
 
 def frame_problem(t: Optional[Telemetry], level_end_ms: float) -> Optional[str]:
@@ -452,7 +477,7 @@ async def verify(payload: VerificationRequest, request: Request):
         raise HTTPException(410, "Challenge expired or already used.")
     elapsed_ms = (time.time() - ch.issued_at) * 1000.0
 
-    strokes, early, feats = engine.precheck(ch, payload.events, elapsed_ms)
+    strokes, early, feats = evaluator.precheck(ch, payload.events, elapsed_ms)
     retry = False
     if early:
         v = early
@@ -465,12 +490,8 @@ async def verify(payload: VerificationRequest, request: Request):
                 v = Verdict("retry", [f"Unstable frame timing: {problem}"], feats)
             else:
                 v = Verdict("inconclusive", ["Repeated unstable frame timing."], feats)
-        elif ml_engine:
-            rec = {"spawns_ms": ch.spawns_ms, "events": [{"k": e.k, "t": e.t} for e in payload.events]}
-            v_dict = ml_engine.judge(rec)
-            v = Verdict(v_dict["verdict"], [v_dict["reason"]], feats)
         else:
-            v = engine.behavior(ch, strokes, feats)
+            v = evaluator.behavior(ch, strokes, feats)
 
     _append(DATA_FILE, _session_record("verify", ch, payload.events, payload.telemetry, elapsed_ms,
                                        verdict=v.verdict, features=v.features))
